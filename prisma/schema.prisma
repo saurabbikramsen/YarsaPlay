@@ -1,0 +1,59 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         String   @id @default(uuid())
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  name     String
+  email    String @unique
+  password String
+  role     String
+}
+
+model Player {
+  id         String   @id @default(uuid())
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  name     String
+  email    String @unique
+  password String
+
+  statistics Statistics @relation(fields: [stats_id], references: [id])
+  stats_id   String     @unique
+
+  Leaderboard Leaderboard?
+}
+
+model Statistics {
+  id         String   @id @default(uuid())
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  experience_point Int
+  games_played     Int
+  games_won        Int
+  Player           Player?
+}
+
+model Leaderboard {
+  id         String   @id @default(uuid())
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  player    Player @relation(fields: [player_id], references: [id])
+  player_id String @unique
+
+  rank Int
+}
