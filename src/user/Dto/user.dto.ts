@@ -34,6 +34,29 @@ export class UserLoginDto {
   password: string;
 }
 
+export class UserGetDto {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  created_at: Date;
+
+  @ApiProperty()
+  updated_at: Date;
+
+  @ApiProperty()
+  name: string;
+
+  @ApiProperty()
+  email: string;
+
+  @ApiProperty()
+  password: string;
+
+  @ApiProperty()
+  role: string;
+}
+
 export class UserLoginResponseDto {
   @ApiProperty()
   accessToken: string;

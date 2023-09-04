@@ -27,13 +27,12 @@ model Player {
   updated_at DateTime @updatedAt
 
   name     String
-  email    String @unique
+  email    String  @unique
   password String
+  active   Boolean @default(true)
 
   statistics Statistics @relation(fields: [stats_id], references: [id])
   stats_id   String     @unique
-
-  Leaderboard Leaderboard?
 }
 
 model Statistics {
@@ -42,18 +41,8 @@ model Statistics {
   updated_at DateTime @updatedAt
 
   experience_point Int
+  coins            Int     @default(0)
   games_played     Int
   games_won        Int
   Player           Player?
-}
-
-model Leaderboard {
-  id         String   @id @default(uuid())
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-
-  player    Player @relation(fields: [player_id], references: [id])
-  player_id String @unique
-
-  rank Int
 }

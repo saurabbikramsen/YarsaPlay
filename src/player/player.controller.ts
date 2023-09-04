@@ -3,33 +3,61 @@ import {
   Controller,
   Delete,
   Get,
+  Inject,
   Param,
   Post,
   Put,
 } from '@nestjs/common';
 import { PlayerService } from './player.service';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
-import { PlayDto, PlayerDto, PlayerLoginDto } from './Dto/player.dto';
+import {
+  PlayDto,
+  PlayerDto,
+  PlayerGetDto,
+  PlayerLoginDto,
+  PlayerUpdateDto,
+  Statistics,
+} from './Dto/player.dto';
 import { UserLoginResponseDto, UserResponseDto } from '../user/Dto/user.dto';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 
 @ApiTags('player')
 @Controller('player')
 export class PlayerController {
-  constructor(private playerService: PlayerService) {}
+  constructor(
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    private playerService: PlayerService,
+  ) {}
+
+  @Post('leaderboard')
+  @ApiResponse({ type: [PlayerGetDto] })
+  async getLeaderboard(@Body() playerDto: PlayDto) {
+    console.log('get vitra');
+    const leaderboardData = await this.cacheManager.get('leaderboard');
+    if (leaderboardData) {
+      return leaderboardData;
+    } else {
+      const data = await this.playerService.getLeaderboard(playerDto);
+      await this.cacheManager.set('leaderboard', data, 300000);
+      return data;
+    }
+  }
   @Get('/:id')
-  @ApiResponse({ type: PlayerDto })
+  @ApiResponse({ type: PlayerGetDto })
   getPlayer(@Param('id') id: string) {
     return this.playerService.getPlayer(id);
   }
-  // @UseGuards(AuthGuard)
+  // @UseGuards(PlayerAuthGuard)
   // @ApiBearerAuth()
   @Get()
-  @ApiResponse({ type: [PlayerDto] })
+  @ApiResponse({ type: [PlayerGetDto] })
   getAllPlayers() {
     return this.playerService.getAllPlayers();
   }
 
   @Post('play')
+  @ApiResponse({ type: Statistics })
   playGame(@Body() playDto: PlayDto) {
     return this.playerService.playGame(playDto);
   }
@@ -48,7 +76,7 @@ export class PlayerController {
 
   @Put('/:id')
   @ApiResponse({ type: UserResponseDto })
-  updatePlayer(@Body() playerDto: PlayerDto, @Param('id') id: string) {
+  updatePlayer(@Body() playerDto: PlayerUpdateDto, @Param('id') id: string) {
     return this.playerService.updatePlayer(id, playerDto);
   }
   @Delete('/:id')

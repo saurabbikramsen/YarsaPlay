@@ -10,6 +10,7 @@ import {
 import { UserService } from './user.service';
 import {
   UserDto,
+  UserGetDto,
   UserLoginDto,
   UserLoginResponseDto,
   UserResponseDto,
@@ -22,14 +23,14 @@ export class UserController {
   constructor(private userService: UserService) {}
 
   @Get('/:id')
-  @ApiResponse({ type: UserDto })
+  @ApiResponse({ type: UserGetDto })
   getUser(@Param('id') id: string) {
     return this.userService.getUser(id);
   }
-  // @UseGuards(AuthGuard)
+  // @UseGuards(PlayerAuthGuard)
   // @ApiBearerAuth()
   @Get()
-  @ApiResponse({ type: [UserDto] })
+  @ApiResponse({ type: [UserGetDto] })
   getAllUsers() {
     return this.userService.getAllUsers();
   }
