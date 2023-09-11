@@ -34,15 +34,17 @@ export class PlayerService {
     return this.prisma.player.findMany({ include: { statistics: true } });
   }
 
-  async setInactive(playerDetails: PlayDto) {
-    const player = await this.prisma.player.update({
-      where: { email: playerDetails.email },
-      data: { active: false },
-    });
+  async setInactive(id: string) {
+    const player = await this.prisma.player.findFirst({ where: { id } });
     if (!player) {
       throw new NotFoundException('no player found');
     }
-    return player;
+    await this.prisma.player.update({
+      where: { id },
+      data: { active: false },
+    });
+
+    return { message: 'player set to Inactive' };
   }
 
   async playGame(playDetail: PlayDto) {
@@ -77,10 +79,12 @@ export class PlayerService {
   async getLeaderboard(playerDetail: PlayDto) {
     const player = await this.prisma.player.findUnique({
       where: { email: playerDetail.email },
+      include: { statistics: true },
     });
     const user = await this.prisma.user.findUnique({
       where: { email: playerDetail.email },
     });
+    console.log(player);
     if ((!user && !player) || player.active == false) {
       throw new UnauthorizedException('player is not found or in-active');
     }
@@ -90,12 +94,10 @@ export class PlayerService {
     players.sort(
       (a, b) => b.statistics.experience_point - a.statistics.experience_point,
     );
-    const ranked_players = players.map((player, index) => {
+    return players.map((player, index) => {
       const rank = index + 1;
       return { ...player, rank };
     });
-
-    return ranked_players;
   }
 
   async loginPlayer(loginDetails: PlayerLoginDto) {

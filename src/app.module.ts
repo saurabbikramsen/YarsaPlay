@@ -1,6 +1,4 @@
 import { Global, Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { UserModule } from './user/user.module';
 import { PrismaModule } from './prisma/prisma.module';
@@ -29,8 +27,7 @@ import { redisStore } from 'cache-manager-redis-yet';
     PrismaModule,
     PlayerModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
+
   exports: [JwtModule],
 })
 export class AppModule {}

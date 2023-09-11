@@ -7,15 +7,10 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
-export class PlayerAuthGuard implements CanActivate {
-  constructor(
-    private config: ConfigService,
-    private jwtService: JwtService,
-    private prisma: PrismaService,
-  ) {}
+export class StaffAuthGuard implements CanActivate {
+  constructor(private config: ConfigService, private jwtService: JwtService) {}
   async canActivate(context: ExecutionContext): Promise<boolean> {
     try {
       const request = context.switchToHttp().getRequest();
@@ -28,11 +23,8 @@ export class PlayerAuthGuard implements CanActivate {
         const token_data = this.jwtService.verify(token, {
           secret: this.config.get('ACCESS_TOKEN_SECRET'),
         });
-        const player = await this.prisma.player.findFirst({
-          where: { email: token_data.email },
-        });
 
-        if (token_data.role == 'player' || player.active == true) {
+        if (token_data.role == 'staff' || token_data.role == 'admin') {
           return true;
         } else {
           new UnauthorizedException(

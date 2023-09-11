@@ -5,6 +5,7 @@ import {
   Get,
   Inject,
   Param,
+  Patch,
   Post,
   Put,
 } from '@nestjs/common';
@@ -33,7 +34,6 @@ export class PlayerController {
   @Post('leaderboard')
   @ApiResponse({ type: [PlayerGetDto] })
   async getLeaderboard(@Body() playerDto: PlayDto) {
-    console.log('get vitra');
     const leaderboardData = await this.cacheManager.get('leaderboard');
     if (leaderboardData) {
       return leaderboardData;
@@ -71,6 +71,7 @@ export class PlayerController {
   @Post('login')
   @ApiResponse({ type: UserLoginResponseDto })
   loginPlayer(@Body() loginDto: PlayerLoginDto) {
+    console.log('hello');
     return this.playerService.loginPlayer(loginDto);
   }
 
@@ -79,6 +80,12 @@ export class PlayerController {
   updatePlayer(@Body() playerDto: PlayerUpdateDto, @Param('id') id: string) {
     return this.playerService.updatePlayer(id, playerDto);
   }
+
+  @Patch('setInactive/:id')
+  setInactive(@Param('id') id: string) {
+    return this.playerService.setInactive(id);
+  }
+
   @Delete('/:id')
   @ApiResponse({ type: UserResponseDto })
   deletePlayer(@Param('id') id: string) {

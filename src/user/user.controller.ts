@@ -15,7 +15,7 @@ import {
   UserLoginResponseDto,
   UserResponseDto,
 } from './Dto/user.dto';
-import { ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('User')
 @Controller('user')
@@ -34,7 +34,8 @@ export class UserController {
   getAllUsers() {
     return this.userService.getAllUsers();
   }
-
+  // @UseGuards(PlayerAuthGuard)
+  // @ApiBearerAuth()
   @Post()
   @ApiResponse({ type: UserResponseDto })
   addUser(@Body() userDto: UserDto) {
@@ -46,12 +47,14 @@ export class UserController {
   loginUser(@Body() loginDto: UserLoginDto) {
     return this.userService.loginUser(loginDto);
   }
-
+  @ApiBearerAuth()
   @Put('/:id')
   @ApiResponse({ type: UserResponseDto })
   updateUser(@Body() userDto: UserDto, @Param('id') id: string) {
     return this.userService.updateUser(id, userDto);
   }
+
+  @ApiBearerAuth()
   @Delete('/:id')
   @ApiResponse({ type: UserResponseDto })
   deleteUser(@Param('id') id: string) {

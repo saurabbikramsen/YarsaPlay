@@ -20,9 +20,13 @@ export class UserService {
   ) {}
 
   async getUser(id: string) {
-    return this.prisma.user.findFirst({
-      where: { id: id },
+    const user = await this.prisma.user.findFirst({
+      where: { id },
     });
+    if (!user) {
+      throw new NotFoundException('user Not found');
+    }
+    return user;
   }
   getAllUsers() {
     return this.prisma.user.findMany({});
@@ -32,6 +36,7 @@ export class UserService {
     const user = await this.prisma.user.findFirst({
       where: { email: loginDetails.email },
     });
+
     if (!user) {
       throw new NotFoundException('User Not found');
     }
@@ -58,7 +63,6 @@ export class UserService {
   }
 
   async addUser(userDetails: UserDto) {
-    console.log(userDetails);
     const user = await this.prisma.user.findFirst({
       where: { email: userDetails.email },
     });
@@ -72,30 +76,19 @@ export class UserService {
           role: userDetails.role,
         },
       });
-      const payload = {
-        email: userDetails.email,
-        role: 'user',
-      };
-
-      const accessToken = await this.generateAccessToken(payload);
-      const refreshToken = await this.generateRefreshToken(payload);
-
-      return {
-        accessToken: accessToken,
-        refreshToken: refreshToken,
-        msg: `welcome ${userDetails.name}`,
-      };
+      return { message: 'user created successfully' };
     } else {
       throw new BadRequestException('EMAIL ALREADY EXISTS');
     }
   }
 
   async updateUser(id: string, userDetails: UserDto) {
-    const user = await this.prisma.user.findUnique({ where: { id } });
+    const user = await this.prisma.user.findFirst({ where: { id } });
     if (!user) {
       throw new NotFoundException('user not found');
     }
     const passwordHash = await argon.hash(userDetails.password);
+
     await this.prisma.user.update({
       where: { id },
       data: {
@@ -106,12 +99,13 @@ export class UserService {
       },
     });
     return {
-      msg: 'User updated Successfully',
+      message: 'User updated Successfully',
     };
   }
 
-  async deleteUser(id) {
+  async deleteUser(id: string) {
     const user = await this.prisma.user.findFirst({ where: { id } });
+    console.log('user is', user);
     if (!user) {
       throw new NotFoundException('user not found');
     }
