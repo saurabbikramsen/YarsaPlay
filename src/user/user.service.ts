@@ -58,7 +58,8 @@ export class UserService {
     return {
       accessToken: accessToken,
       refreshToken: refreshToken,
-      msg: `welcome ${user.name}`,
+      message: `welcome ${user.name}`,
+      role: user.role,
     };
   }
 

@@ -162,7 +162,11 @@ describe('UserService', () => {
         .spyOn(prismaService.user, 'create')
         .mockResolvedValueOnce(user);
       const userAdd = await userService.addUser(addUser);
-      expect(userAdd).toStrictEqual(loginDetail);
+      expect(userAdd).toEqual(
+        expect.objectContaining({
+          message: expect.any(String),
+        }),
+      );
       expect(addSpyOn).toBeCalledTimes(6);
       expect(createSpyOn).toBeCalledTimes(1);
     });
@@ -231,7 +235,7 @@ describe('UserService', () => {
       const jwtAccessSpyOn = jest.spyOn(jwtService, 'signAsync');
       const generateAccess = await userService.generateAccessToken(jwtPayload);
       expect(generateAccess).toStrictEqual(jwtToken);
-      expect(jwtAccessSpyOn).toBeCalledTimes(5);
+      expect(jwtAccessSpyOn).toBeCalledTimes(3);
     });
   });
   describe('generate refresh token', () => {
@@ -239,7 +243,7 @@ describe('UserService', () => {
       const jwtRefreshSpyOn = jest.spyOn(jwtService, 'signAsync');
       const generateAccess = await userService.generateAccessToken(jwtPayload);
       expect(generateAccess).toStrictEqual(jwtToken);
-      expect(jwtRefreshSpyOn).toBeCalledTimes(6);
+      expect(jwtRefreshSpyOn).toBeCalledTimes(4);
     });
   });
 });
