@@ -128,7 +128,8 @@ export class PlayerService {
     return {
       accessToken: accessToken,
       refreshToken: refreshToken,
-      msg: `welcome ${player.name}`,
+      message: `welcome ${player.name}`,
+      role: 'player',
     };
   }
 
@@ -164,7 +165,8 @@ export class PlayerService {
       return {
         accessToken: accessToken,
         refreshToken: refreshToken,
-        msg: `welcome ${playerDetails.name}`,
+        message: `welcome ${playerDetails.name}`,
+        role: 'player',
       };
     } else {
       throw new BadRequestException('EMAIL ALREADY EXISTS');
@@ -188,7 +190,7 @@ export class PlayerService {
       },
     });
     return {
-      msg: 'Player updated Successfully',
+      message: 'Player updated Successfully',
     };
   }
 
