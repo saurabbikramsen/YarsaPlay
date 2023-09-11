@@ -20,10 +20,8 @@ export class PlayerAuthGuard implements CanActivate {
     try {
       const request = context.switchToHttp().getRequest();
       const authorization = request?.headers.authorization;
-      console.log(request.headers);
       if (authorization) {
         const token = authorization.slice(7, authorization.length);
-        console.log(token);
 
         const token_data = this.jwtService.verify(token, {
           secret: this.config.get('ACCESS_TOKEN_SECRET'),
@@ -32,7 +30,10 @@ export class PlayerAuthGuard implements CanActivate {
           where: { email: token_data.email },
         });
 
-        if (token_data.role == 'player' || player.active == true) {
+        if (
+          (token_data.role == 'player' && player.active == true) ||
+          token_data.role == 'admin'
+        ) {
           return true;
         } else {
           new UnauthorizedException(

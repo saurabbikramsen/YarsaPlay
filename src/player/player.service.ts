@@ -172,7 +172,9 @@ export class PlayerService {
   }
 
   async updatePlayer(id: string, playerDetails: PlayerUpdateDto) {
-    const player = await this.prisma.player.findUnique({ where: { id } });
+    const player = await this.prisma.player.findFirst({ where: { id } });
+    console.log(id);
+    console.log(player);
     if (!player) {
       throw new NotFoundException('player not found');
     }

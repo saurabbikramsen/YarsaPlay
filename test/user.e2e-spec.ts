@@ -3,15 +3,6 @@ import { HttpStatus, INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
 
-interface User {
-  id: string;
-  created_at: Date;
-  updated_at: Date;
-  name: string;
-  email: string;
-  password: string;
-  role: string;
-}
 describe('UserController E2E test (e2e)', () => {
   let app: INestApplication;
 

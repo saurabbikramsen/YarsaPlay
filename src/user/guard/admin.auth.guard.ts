@@ -15,10 +15,8 @@ export class AdminAuthGuard implements CanActivate {
     try {
       const request = context.switchToHttp().getRequest();
       const authorization = request?.headers.authorization;
-      console.log(request.headers);
       if (authorization) {
         const token = authorization.slice(7, authorization.length);
-        console.log(token);
 
         const token_data = this.jwtService.verify(token, {
           secret: this.config.get('ACCESS_TOKEN_SECRET'),

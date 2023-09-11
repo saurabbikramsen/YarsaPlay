@@ -6,6 +6,7 @@ import {
   Param,
   Post,
   Put,
+  UseGuards,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import {
@@ -16,26 +17,30 @@ import {
   UserResponseDto,
 } from './Dto/user.dto';
 import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { AdminAuthGuard } from './guard/admin.auth.guard';
+import { StaffAuthGuard } from './guard/staff.auth.guard';
 
 @ApiTags('User')
 @Controller('user')
 export class UserController {
   constructor(private userService: UserService) {}
 
+  @UseGuards(StaffAuthGuard)
+  @ApiBearerAuth()
   @Get('/:id')
   @ApiResponse({ type: UserGetDto })
   getUser(@Param('id') id: string) {
     return this.userService.getUser(id);
   }
-  // @UseGuards(PlayerAuthGuard)
-  // @ApiBearerAuth()
+  @UseGuards(StaffAuthGuard)
+  @ApiBearerAuth()
   @Get()
   @ApiResponse({ type: [UserGetDto] })
   getAllUsers() {
     return this.userService.getAllUsers();
   }
-  // @UseGuards(PlayerAuthGuard)
-  // @ApiBearerAuth()
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth()
   @Post()
   @ApiResponse({ type: UserResponseDto })
   addUser(@Body() userDto: UserDto) {
@@ -47,13 +52,16 @@ export class UserController {
   loginUser(@Body() loginDto: UserLoginDto) {
     return this.userService.loginUser(loginDto);
   }
+  @UseGuards(AdminAuthGuard)
   @ApiBearerAuth()
   @Put('/:id')
   @ApiResponse({ type: UserResponseDto })
   updateUser(@Body() userDto: UserDto, @Param('id') id: string) {
+    console.log('check If inside the function');
     return this.userService.updateUser(id, userDto);
   }
 
+  @UseGuards(AdminAuthGuard)
   @ApiBearerAuth()
   @Delete('/:id')
   @ApiResponse({ type: UserResponseDto })
