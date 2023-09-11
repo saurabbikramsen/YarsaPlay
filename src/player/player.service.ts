@@ -84,20 +84,25 @@ export class PlayerService {
     const user = await this.prisma.user.findUnique({
       where: { email: playerDetail.email },
     });
-    console.log(player);
-    if ((!user && !player) || player.active == false) {
-      throw new UnauthorizedException('player is not found or in-active');
+    if (player || user) {
+      if (player) {
+        if (player.active == false) {
+          throw new UnauthorizedException('player is not found or in-active');
+        }
+      }
+      const players = await this.prisma.player.findMany({
+        include: { statistics: true },
+      });
+      players.sort(
+        (a, b) => b.statistics.experience_point - a.statistics.experience_point,
+      );
+      return players.map((player, index) => {
+        const rank = index + 1;
+        return { ...player, rank };
+      });
+    } else {
+      throw new NotFoundException('User not found');
     }
-    const players = await this.prisma.player.findMany({
-      include: { statistics: true },
-    });
-    players.sort(
-      (a, b) => b.statistics.experience_point - a.statistics.experience_point,
-    );
-    return players.map((player, index) => {
-      const rank = index + 1;
-      return { ...player, rank };
-    });
   }
 
   async loginPlayer(loginDetails: PlayerLoginDto) {
@@ -128,8 +133,9 @@ export class PlayerService {
     return {
       accessToken: accessToken,
       refreshToken: refreshToken,
-      message: `welcome ${player.name}`,
       role: 'player',
+      name: player.name,
+      id: player.id,
     };
   }
 
@@ -165,8 +171,9 @@ export class PlayerService {
       return {
         accessToken: accessToken,
         refreshToken: refreshToken,
-        message: `welcome ${playerDetails.name}`,
         role: 'player',
+        name: player.name,
+        id: player.id,
       };
     } else {
       throw new BadRequestException('EMAIL ALREADY EXISTS');
