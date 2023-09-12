@@ -9,7 +9,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
-import { RefreshDto, UserDto, UserLoginDto } from './Dto/user.dto';
+import { RefreshDto, SeedDto, UserDto, UserLoginDto } from './Dto/user.dto';
 import * as argon from 'argon2';
 
 @Injectable()
@@ -97,12 +97,21 @@ export class UserService {
       throw new BadRequestException('EMAIL ALREADY EXISTS');
     }
   }
+  async seedAdmin(seedDetails: SeedDto) {
+    const count = await this.prisma.user.count();
+    if (!count) {
+      await this.prisma.user.create({
+        data: { ...seedDetails, role: 'admin' },
+      });
+      return { message: 'welcome ' };
+    }
+    throw new BadRequestException('user already present no need to seed');
+  }
 
   async generateRefresh(refreshDetails: RefreshDto) {
     const token_data = this.jwtService.verify(refreshDetails.refreshToken, {
       secret: this.config.get('REFRESH_TOKEN_SECRET'),
     });
-    console.log(token_data);
     const key = generateRandomString(6);
 
     if (token_data.role == 'player') {

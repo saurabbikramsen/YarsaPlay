@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -13,6 +12,7 @@ import { UserService } from './user.service';
 import {
   RefreshDto,
   RefreshResponseDto,
+  SeedDto,
   UserDto,
   UserGetDto,
   UserLoginDto,
@@ -61,10 +61,13 @@ export class UserController {
   @Post()
   @ApiResponse({ type: UserResponseDto })
   addUser(@Body() userDto: UserDto) {
-    if (!userDto) {
-      throw new BadRequestException('Invalid request body.');
-    }
     return this.userService.addUser(userDto);
+  }
+
+  @Post('seed')
+  @ApiResponse({ type: UserResponseDto })
+  seedAdmin(@Body() seedDto: SeedDto) {
+    return this.userService.seedAdmin(seedDto);
   }
 
   @Post('login')

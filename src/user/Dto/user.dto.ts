@@ -37,8 +37,25 @@ export class UserLoginDto {
   password: string;
 }
 
-export class UserGetDto {
+export class SeedDto {
   @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  name: string;
+
+  @ApiProperty()
+  @IsEmail()
+  @IsNotEmpty()
+  email: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  @Length(6)
+  password: string;
+}
+
+export class UserGetDto {
   @ApiProperty()
   name: string;
 

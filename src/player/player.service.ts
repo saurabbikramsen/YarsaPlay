@@ -36,16 +36,7 @@ export class PlayerService {
       return this.prisma.player.findFirst({ where: { id } });
     }
   }
-  // async getBulkPlayers(bulk: BulkDto) {
-  //   console.log(bulk);
-  //   const players_ids = bulk.ids.split(',');
-  //   return players_ids.map((id) => {
-  //     return this.prisma.player.findFirst({
-  //       where: { id },
-  //       select: { statistics: true, name: true, active: true },
-  //     });
-  //   });
-  // }
+
   getAllPlayers() {
     return this.prisma.player.findMany({
       select: { name: true, active: true, statistics: true },
