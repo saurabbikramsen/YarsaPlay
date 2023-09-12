@@ -4,6 +4,7 @@ import {
   HttpStatus,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
@@ -22,6 +23,7 @@ export class UserService {
   async getUser(id: string) {
     const user = await this.prisma.user.findFirst({
       where: { id },
+      select: { name: true, email: true, role: true },
     });
     if (!user) {
       throw new NotFoundException('user Not found');
@@ -29,13 +31,17 @@ export class UserService {
     return user;
   }
   getAllUsers() {
-    return this.prisma.user.findMany({});
+    return this.prisma.user.findMany({
+      select: { name: true, email: true, role: true },
+    });
   }
 
   async loginUser(loginDetails: UserLoginDto) {
     const user = await this.prisma.user.findFirst({
       where: { email: loginDetails.email },
     });
+    console.log(loginDetails);
+    console.log(user);
 
     if (!user) {
       throw new NotFoundException('User Not found');
@@ -47,17 +53,25 @@ export class UserService {
         HttpStatus.UNAUTHORIZED,
       );
     }
+    const refresh_key = generateRandomString(6);
+
     const payload = {
       email: user.email,
       role: user.role,
+      refresh_key,
     };
 
     const accessToken = await this.generateAccessToken(payload);
     const refreshToken = await this.generateRefreshToken(payload);
 
+    await this.prisma.user.update({
+      where: { email: loginDetails.email },
+      data: { refresh_key },
+    });
+
     return {
-      accessToken: accessToken,
-      refreshToken: refreshToken,
+      accessToken,
+      refreshToken,
       role: user.role,
       name: user.name,
       id: user.id,
@@ -88,20 +102,40 @@ export class UserService {
     const token_data = this.jwtService.verify(refreshDetails.refreshToken, {
       secret: this.config.get('REFRESH_TOKEN_SECRET'),
     });
+    console.log(token_data);
+    const key = generateRandomString(6);
 
-    const newAccessToken = await this.generateAccessToken({
-      email: token_data.email,
-      role: token_data.role,
-    });
-    const newRefreshToken = await this.generateRefreshToken({
-      email: token_data.email,
-      role: token_data.role,
-    });
+    if (token_data.role == 'player') {
+      const player = await this.prisma.player.findFirst({
+        where: { email: token_data.email },
+      });
 
-    return {
-      accessToken: newAccessToken,
-      refreshToken: newRefreshToken,
-    };
+      if (token_data.refresh_key == player.refresh_key) {
+        const tokens = await this.tokenValidation(player, key);
+        await this.prisma.player.update({
+          where: { email: token_data.email },
+          data: { refresh_key: key },
+        });
+        return tokens;
+      } else {
+        throw new UnauthorizedException('you are not authorized');
+      }
+    } else if (token_data.role == 'admin' || token_data.role == 'staff') {
+      const user = await this.prisma.user.findFirst({
+        where: { email: token_data.email },
+      });
+      console.log(user);
+      if (token_data.refresh_key == user.refresh_key) {
+        const tokens = await this.tokenValidation(user, key);
+        await this.prisma.user.update({
+          where: { email: token_data.email },
+          data: { refresh_key: key },
+        });
+        return tokens;
+      } else {
+        throw new UnauthorizedException('you are not authorized');
+      }
+    }
   }
 
   async updateUser(id: string, userDetails: UserDto) {
@@ -144,6 +178,7 @@ export class UserService {
       secret,
     });
   }
+
   async generateRefreshToken(payload) {
     const secret = this.config.get('REFRESH_TOKEN_SECRET');
     return this.jwtService.signAsync(payload, {
@@ -151,4 +186,30 @@ export class UserService {
       expiresIn: '2h',
     });
   }
+
+  async tokenValidation(user, key) {
+    const payload = {
+      email: user.email,
+      role: user.role,
+      key: key,
+    };
+    const newAccessToken = await this.generateAccessToken(payload);
+    const newRefreshToken = await this.generateRefreshToken(payload);
+
+    return {
+      accessToken: newAccessToken,
+      refreshToken: newRefreshToken,
+    };
+  }
+}
+export function generateRandomString(length) {
+  const characters =
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let randomString = '';
+
+  for (let i = 0; i < length; i++) {
+    const randomIndex = Math.floor(Math.random() * characters.length);
+    randomString += characters.charAt(randomIndex);
+  }
+  return randomString;
 }

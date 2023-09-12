@@ -104,3 +104,35 @@ export class PlayerGetDto {
   @ApiProperty()
   statistics: Statistics;
 }
+
+export class PlayerLeaderboardDto {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  created_at: Date;
+
+  @ApiProperty()
+  updated_at: Date;
+
+  @ApiProperty()
+  name: string;
+
+  @ApiProperty()
+  email: string;
+
+  @ApiProperty()
+  password: string;
+
+  @ApiProperty()
+  active: boolean;
+
+  @ApiProperty()
+  rank: number;
+
+  @ApiProperty()
+  stats_id: string;
+
+  @ApiProperty()
+  statistics: Statistics;
+}

@@ -15,10 +15,11 @@ model User {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  name     String
-  email    String @unique
-  password String
-  role     String
+  name        String
+  email       String  @unique
+  password    String
+  role        String
+  refresh_key String?
 }
 
 model Player {
@@ -31,8 +32,9 @@ model Player {
   password String
   active   Boolean @default(true)
 
-  statistics Statistics @relation(fields: [stats_id], references: [id])
-  stats_id   String     @unique
+  statistics  Statistics @relation(fields: [stats_id], references: [id])
+  stats_id    String     @unique
+  refresh_key String?    @default("dsfa")
 }
 
 model Statistics {

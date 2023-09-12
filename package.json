@@ -7,6 +7,7 @@
   "license": "UNLICENSED",
   "scripts": {
     "build": "nest build",
+    "seed": "ts-node prisma/seed.ts",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
@@ -28,8 +29,9 @@
     "@nestjs/jwt": "^10.1.0",
     "@nestjs/platform-express": "^9.0.0",
     "@nestjs/swagger": "^7.1.10",
-    "@prisma/client": "5.2.0",
+    "@prisma/client": "^5.2.0",
     "@types/cache-manager": "^4.0.2",
+    "@types/faker": "^6.6.9",
     "@types/redis": "^4.0.11",
     "argon2": "^0.31.0",
     "cache-manager": "^5.2.3",
@@ -43,6 +45,7 @@
     "rxjs": "^7.2.0"
   },
   "devDependencies": {
+    "@faker-js/faker": "^8.0.2",
     "@nestjs/cli": "^9.0.0",
     "@nestjs/schematics": "^9.0.0",
     "@nestjs/testing": "^9.0.0",

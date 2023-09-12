@@ -16,6 +16,7 @@ import {
   PlayerLoginDto,
   PlayerUpdateDto,
 } from './Dto/player.dto';
+import { generateRandomString } from '../user/user.service';
 
 @Injectable()
 export class PlayerService {
@@ -26,12 +27,29 @@ export class PlayerService {
   ) {}
 
   async getPlayer(id: string) {
-    return this.prisma.player.findFirst({
-      where: { id },
-    });
+    if (id.includes(',')) {
+      const players_ids = id.split(',');
+      return this.prisma.player.findMany({
+        where: { id: { in: players_ids }, active: true },
+      });
+    } else {
+      return this.prisma.player.findFirst({ where: { id } });
+    }
   }
+  // async getBulkPlayers(bulk: BulkDto) {
+  //   console.log(bulk);
+  //   const players_ids = bulk.ids.split(',');
+  //   return players_ids.map((id) => {
+  //     return this.prisma.player.findFirst({
+  //       where: { id },
+  //       select: { statistics: true, name: true, active: true },
+  //     });
+  //   });
+  // }
   getAllPlayers() {
-    return this.prisma.player.findMany({ include: { statistics: true } });
+    return this.prisma.player.findMany({
+      select: { name: true, active: true, statistics: true },
+    });
   }
 
   async setInactive(id: string) {
@@ -76,33 +94,16 @@ export class PlayerService {
     return stats;
   }
 
-  async getLeaderboard(playerDetail: PlayDto) {
-    const player = await this.prisma.player.findUnique({
-      where: { email: playerDetail.email },
+  async getLeaderboard() {
+    const players = await this.prisma.player.findMany({
       include: { statistics: true },
+      orderBy: { statistics: { experience_point: 'desc' } },
     });
-    const user = await this.prisma.user.findUnique({
-      where: { email: playerDetail.email },
+
+    return players.map((player, index) => {
+      const rank = index + 1;
+      return { ...player, rank };
     });
-    if (player || user) {
-      if (player) {
-        if (player.active == false) {
-          throw new UnauthorizedException('player is not found or in-active');
-        }
-      }
-      const players = await this.prisma.player.findMany({
-        include: { statistics: true },
-      });
-      players.sort(
-        (a, b) => b.statistics.experience_point - a.statistics.experience_point,
-      );
-      return players.map((player, index) => {
-        const rank = index + 1;
-        return { ...player, rank };
-      });
-    } else {
-      throw new NotFoundException('User not found');
-    }
   }
 
   async loginPlayer(loginDetails: PlayerLoginDto) {
@@ -126,9 +127,16 @@ export class PlayerService {
       email: player.email,
       role: 'player',
     };
-
+    const key = generateRandomString(6);
     const accessToken = await this.generateAccessToken(payload);
-    const refreshToken = await this.generateRefreshToken(payload);
+    const refreshToken = await this.generateRefreshToken({
+      ...payload,
+      refresh_key: key,
+    });
+    await this.prisma.player.update({
+      where: { email: player.email },
+      data: { refresh_key: key },
+    });
 
     return {
       accessToken: accessToken,
@@ -152,7 +160,7 @@ export class PlayerService {
         },
       });
       const passwordHash = await argon.hash(playerDetails.password);
-      await this.prisma.player.create({
+      const newPlayer = await this.prisma.player.create({
         data: {
           name: playerDetails.name,
           email: playerDetails.email,
@@ -164,16 +172,24 @@ export class PlayerService {
         email: playerDetails.email,
         role: 'player',
       };
+      const key = generateRandomString(6);
 
       const accessToken = await this.generateAccessToken(payload);
-      const refreshToken = await this.generateRefreshToken(payload);
+      const refreshToken = await this.generateRefreshToken({
+        ...payload,
+        refresh_key: key,
+      });
+      await this.prisma.player.update({
+        where: { email: newPlayer.email },
+        data: { refresh_key: key },
+      });
 
       return {
         accessToken: accessToken,
         refreshToken: refreshToken,
         role: 'player',
-        name: player.name,
-        id: player.id,
+        name: newPlayer.name,
+        id: newPlayer.id,
       };
     } else {
       throw new BadRequestException('EMAIL ALREADY EXISTS');
@@ -215,7 +231,7 @@ export class PlayerService {
   async generateAccessToken(payload: any) {
     const secret = this.config.get('ACCESS_TOKEN_SECRET');
     return this.jwt.signAsync(payload, {
-      expiresIn: '1h',
+      expiresIn: this.config.get('ACCESS_EXPIRY'),
       secret,
     });
   }
@@ -223,7 +239,7 @@ export class PlayerService {
     const secret = this.config.get('REFRESH_TOKEN_SECRET');
     return this.jwt.signAsync(payload, {
       secret,
-      expiresIn: '2h',
+      expiresIn: this.config.get('REFRESH_EXPIRY'),
     });
   }
 }

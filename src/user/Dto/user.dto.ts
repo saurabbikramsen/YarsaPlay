@@ -1,5 +1,6 @@
-import { IsEmail, IsNotEmpty, IsString, Length } from 'class-validator';
+import { IsEmail, IsEnum, IsNotEmpty, IsString, Length } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { UserRole } from '../../enums/enums';
 
 export class UserDto {
   @ApiProperty()
@@ -19,9 +20,9 @@ export class UserDto {
   password: string;
 
   @ApiProperty()
-  @IsString()
   @IsNotEmpty()
-  role: string;
+  @IsEnum(UserRole)
+  role: UserRole;
 }
 export class UserLoginDto {
   @ApiProperty()
@@ -38,25 +39,11 @@ export class UserLoginDto {
 
 export class UserGetDto {
   @ApiProperty()
-  id: string;
-
-  @ApiProperty()
-  created_at: Date;
-
-  @ApiProperty()
-  updated_at: Date;
-
   @ApiProperty()
   name: string;
 
   @ApiProperty()
-  email: string;
-
-  @ApiProperty()
-  password: string;
-
-  @ApiProperty()
-  role: string;
+  role: UserRole;
 }
 
 export class UserLoginResponseDto {
@@ -73,7 +60,7 @@ export class UserLoginResponseDto {
   name: string;
 
   @ApiProperty()
-  role: string;
+  role: UserRole;
 }
 
 export class RefreshResponseDto {
@@ -85,9 +72,15 @@ export class RefreshResponseDto {
 }
 export class RefreshDto {
   @ApiProperty()
+  @IsString()
   refreshToken: string;
 }
 export class UserResponseDto {
   @ApiProperty()
-  msg: string;
+  message: string;
+}
+
+export class BulkDto {
+  @ApiProperty()
+  ids: string;
 }
