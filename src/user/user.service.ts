@@ -8,7 +8,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
-import { UserDto, UserLoginDto } from './Dto/user.dto';
+import { RefreshDto, UserDto, UserLoginDto } from './Dto/user.dto';
 import * as argon from 'argon2';
 
 @Injectable()
@@ -16,7 +16,7 @@ export class UserService {
   constructor(
     private prisma: PrismaService,
     private config: ConfigService,
-    private jwt: JwtService,
+    private jwtService: JwtService,
   ) {}
 
   async getUser(id: string) {
@@ -84,6 +84,26 @@ export class UserService {
     }
   }
 
+  async generateRefresh(refreshDetails: RefreshDto) {
+    const token_data = this.jwtService.verify(refreshDetails.refreshToken, {
+      secret: this.config.get('REFRESH_TOKEN_SECRET'),
+    });
+
+    const newAccessToken = await this.generateAccessToken({
+      email: token_data.email,
+      role: token_data.role,
+    });
+    const newRefreshToken = await this.generateRefreshToken({
+      email: token_data.email,
+      role: token_data.role,
+    });
+
+    return {
+      accessToken: newAccessToken,
+      refreshToken: newRefreshToken,
+    };
+  }
+
   async updateUser(id: string, userDetails: UserDto) {
     const user = await this.prisma.user.findFirst({ where: { id } });
     if (!user) {
@@ -119,14 +139,14 @@ export class UserService {
 
   async generateAccessToken(payload) {
     const secret = this.config.get('ACCESS_TOKEN_SECRET');
-    return this.jwt.signAsync(payload, {
+    return this.jwtService.signAsync(payload, {
       expiresIn: '1h',
       secret,
     });
   }
   async generateRefreshToken(payload) {
     const secret = this.config.get('REFRESH_TOKEN_SECRET');
-    return this.jwt.signAsync(payload, {
+    return this.jwtService.signAsync(payload, {
       secret,
       expiresIn: '2h',
     });

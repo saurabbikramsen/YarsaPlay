@@ -67,9 +67,26 @@ export class UserLoginResponseDto {
   refreshToken: string;
 
   @ApiProperty()
-  msg: string;
+  id: string;
+
+  @ApiProperty()
+  name: string;
+
+  @ApiProperty()
+  role: string;
 }
 
+export class RefreshResponseDto {
+  @ApiProperty()
+  accessToken: string;
+
+  @ApiProperty()
+  refreshToken: string;
+}
+export class RefreshDto {
+  @ApiProperty()
+  refreshToken: string;
+}
 export class UserResponseDto {
   @ApiProperty()
   msg: string;

@@ -15,12 +15,14 @@ export class AdminAuthGuard implements CanActivate {
     try {
       const request = context.switchToHttp().getRequest();
       const authorization = request?.headers.authorization;
+      console.log(authorization);
       if (authorization) {
         const token = authorization.slice(7, authorization.length);
 
         const token_data = this.jwtService.verify(token, {
           secret: this.config.get('ACCESS_TOKEN_SECRET'),
         });
+        console.log(token_data);
 
         if (token_data.role == 'admin') {
           return true;

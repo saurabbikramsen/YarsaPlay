@@ -10,6 +10,8 @@ import {
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import {
+  RefreshDto,
+  RefreshResponseDto,
   UserDto,
   UserGetDto,
   UserLoginDto,
@@ -44,6 +46,7 @@ export class UserController {
   @Post()
   @ApiResponse({ type: UserResponseDto })
   addUser(@Body() userDto: UserDto) {
+    console.log('inside add user');
     return this.userService.addUser(userDto);
   }
 
@@ -52,6 +55,13 @@ export class UserController {
   loginUser(@Body() loginDto: UserLoginDto) {
     return this.userService.loginUser(loginDto);
   }
+
+  @Post('refresh')
+  @ApiResponse({ type: RefreshResponseDto })
+  generateRefresh(@Body() refreshDto: RefreshDto) {
+    return this.userService.generateRefresh(refreshDto);
+  }
+
   @UseGuards(AdminAuthGuard)
   @ApiBearerAuth()
   @Put('/:id')

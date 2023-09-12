@@ -35,6 +35,9 @@ const JWTServiceMock = {
     .mockResolvedValue(
       'yJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InNhdXJhYkBnbWFpbC5jb20iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE2OTM5OTE3NTIsImV4cCI6MTY5Mzk5NTM1Mn0.J8jYgtI5M3zEKApqhAhUnqY4j63fIIXdFRpBGzfL5MU',
     ),
+  verify: jest
+    .fn()
+    .mockResolvedValue({ email: 'saurab123@gmail.com', role: 'saurab123' }),
 };
 
 describe('UserService', () => {
@@ -172,6 +175,23 @@ describe('UserService', () => {
     });
   });
 
+  describe('generate new refresh and access token', () => {
+    it('should generate new access and refresh token', async () => {
+      const verifySpyOn = jest.spyOn(jwtService, 'verify');
+      const generateToken = await userService.generateRefresh({
+        refreshToken:
+          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InNhdXJhYjEyM0BnbWFpbC5jb20iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE2OTQ0MTIwNTQsImV4cCI6MTY5NDQxOTI1NH0.JfYb0_XCIU6ZePMxO4FQQHqdtTe417yTdVZ7JbR6J3Q',
+      });
+      expect(generateToken).toEqual(
+        expect.objectContaining({
+          accessToken: expect.any(String),
+          refreshToken: expect.any(String),
+        }),
+      );
+      expect(verifySpyOn).toBeCalledTimes(1);
+    });
+  });
+
   describe('update existing user', () => {
     it('should throw exception if user doesnot exist', async () => {
       const updateSpyOn = jest
@@ -235,7 +255,7 @@ describe('UserService', () => {
       const jwtAccessSpyOn = jest.spyOn(jwtService, 'signAsync');
       const generateAccess = await userService.generateAccessToken(jwtPayload);
       expect(generateAccess).toStrictEqual(jwtToken);
-      expect(jwtAccessSpyOn).toBeCalledTimes(3);
+      expect(jwtAccessSpyOn).toBeCalledTimes(5);
     });
   });
   describe('generate refresh token', () => {
@@ -243,7 +263,7 @@ describe('UserService', () => {
       const jwtRefreshSpyOn = jest.spyOn(jwtService, 'signAsync');
       const generateAccess = await userService.generateAccessToken(jwtPayload);
       expect(generateAccess).toStrictEqual(jwtToken);
-      expect(jwtRefreshSpyOn).toBeCalledTimes(4);
+      expect(jwtRefreshSpyOn).toBeCalledTimes(6);
     });
   });
 });
