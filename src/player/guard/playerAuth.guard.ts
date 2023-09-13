@@ -1,6 +1,7 @@
 import {
   CanActivate,
   ExecutionContext,
+  ForbiddenException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -22,10 +23,12 @@ export class PlayerAuthGuard implements CanActivate {
       const authorization = request?.headers.authorization;
       if (authorization) {
         const token = authorization.slice(7, authorization.length);
-
-        const token_data = this.jwtService.verify(token, {
+        console.log('token is', token);
+        const token_data = await this.jwtService.verify(token, {
           secret: this.config.get('ACCESS_TOKEN_SECRET'),
         });
+
+        console.log('token data is', token_data);
         const player = await this.prisma.player.findFirst({
           where: { email: token_data.email },
         });
@@ -37,15 +40,18 @@ export class PlayerAuthGuard implements CanActivate {
         ) {
           return true;
         } else {
-          new UnauthorizedException(
+          throw new ForbiddenException(
             'you are not eligible to perform this task',
           );
         }
       } else {
-        new NotFoundException('no token found');
+        throw new NotFoundException('no token found');
       }
       return false;
     } catch (error) {
+      if (error.name === 'TokenExpiredError') {
+        throw new UnauthorizedException('Token is expired');
+      }
       throw error;
     }
   }

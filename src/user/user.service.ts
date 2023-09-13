@@ -187,7 +187,7 @@ export class UserService {
   async generateAccessToken(payload) {
     const secret = this.config.get('ACCESS_TOKEN_SECRET');
     return this.jwtService.signAsync(payload, {
-      expiresIn: '1h',
+      expiresIn: this.config.get('ACCESS_EXPIRY'),
       secret,
     });
   }
@@ -196,7 +196,7 @@ export class UserService {
     const secret = this.config.get('REFRESH_TOKEN_SECRET');
     return this.jwtService.signAsync(payload, {
       secret,
-      expiresIn: '2h',
+      expiresIn: this.config.get('REFRESH_EXPIRY'),
     });
   }
 

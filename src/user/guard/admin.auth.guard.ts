@@ -36,6 +36,9 @@ export class AdminAuthGuard implements CanActivate {
       }
       return false;
     } catch (error) {
+      if (error.name === 'TokenExpiredError') {
+        throw new UnauthorizedException('Token is expired');
+      }
       throw error;
     }
   }
