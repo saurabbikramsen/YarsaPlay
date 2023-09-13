@@ -36,7 +36,7 @@ export class UserController {
   @UseGuards(StaffAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({
-    summary: 'Get a specific user for the id',
+    summary: `Get a specific user for the given id `,
   })
   @Get('/:id')
   @ApiResponse({ type: UserGetDto })
@@ -53,8 +53,8 @@ export class UserController {
   getAllUsers() {
     return this.userService.getAllUsers();
   }
-  // @UseGuards(AdminAuthGuard)
-  // @ApiBearerAuth()
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({
     summary: 'Adding a new user (admin/staff)',
   })
@@ -66,6 +66,7 @@ export class UserController {
 
   @Post('seed')
   @ApiResponse({ type: UserResponseDto })
+  @ApiOperation({ summary: 'Seed the first admin user' })
   seedAdmin(@Body() seedDto: SeedDto) {
     return this.userService.seedAdmin(seedDto);
   }
@@ -82,7 +83,7 @@ export class UserController {
   @Post('generaterefresh')
   @ApiResponse({ type: RefreshResponseDto })
   @ApiOperation({
-    summary: 'set the refresh token to expired',
+    summary: 'generate a new access and refresh token',
   })
   expireRefreshToken(@Body() refreshDto: RefreshDto) {
     return this.userService.generateRefresh(refreshDto);
@@ -91,7 +92,7 @@ export class UserController {
   @UseGuards(AdminAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({
-    summary: 'Updating the user data',
+    summary: 'Updating the user data of given id',
   })
   @Put('/:id')
   @ApiResponse({ type: UserResponseDto })
@@ -102,7 +103,7 @@ export class UserController {
   @UseGuards(AdminAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({
-    summary: 'Delete a specific user with id',
+    summary: 'Delete a specific user with given id',
   })
   @Delete('/:id')
   @ApiResponse({ type: UserResponseDto })

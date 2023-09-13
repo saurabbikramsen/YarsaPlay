@@ -40,9 +40,6 @@ export class UserService {
     const user = await this.prisma.user.findFirst({
       where: { email: loginDetails.email },
     });
-    console.log(loginDetails);
-    console.log(user);
-
     if (!user) {
       throw new NotFoundException('User Not found');
     }
@@ -58,11 +55,13 @@ export class UserService {
     const payload = {
       email: user.email,
       role: user.role,
-      refresh_key,
     };
 
     const accessToken = await this.generateAccessToken(payload);
-    const refreshToken = await this.generateRefreshToken(payload);
+    const refreshToken = await this.generateRefreshToken({
+      ...payload,
+      refresh_key,
+    });
 
     await this.prisma.user.update({
       where: { email: loginDetails.email },
@@ -94,16 +93,22 @@ export class UserService {
       });
       return { message: 'user created successfully' };
     } else {
-      throw new BadRequestException('EMAIL ALREADY EXISTS');
+      throw new BadRequestException('User Already Exists');
     }
   }
   async seedAdmin(seedDetails: SeedDto) {
     const count = await this.prisma.user.count();
     if (!count) {
+      const hashPassword = await argon.hash(seedDetails.password);
       await this.prisma.user.create({
-        data: { ...seedDetails, role: 'admin' },
+        data: {
+          name: seedDetails.name,
+          email: seedDetails.email,
+          password: hashPassword,
+          role: 'admin',
+        },
       });
-      return { message: 'welcome ' };
+      return { message: 'Admin seeded successfully' };
     }
     throw new BadRequestException('user already present no need to seed');
   }
@@ -133,7 +138,6 @@ export class UserService {
       const user = await this.prisma.user.findFirst({
         where: { email: token_data.email },
       });
-      console.log(user);
       if (token_data.refresh_key == user.refresh_key) {
         const tokens = await this.tokenValidation(user, key);
         await this.prisma.user.update({
@@ -211,7 +215,7 @@ export class UserService {
     };
   }
 }
-export function generateRandomString(length) {
+export function generateRandomString(length: number) {
   const characters =
     'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   let randomString = '';

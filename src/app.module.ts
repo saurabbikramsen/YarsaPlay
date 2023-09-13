@@ -7,6 +7,7 @@ import { PlayerModule } from './player/player.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import type { RedisClientOptions } from 'redis';
 import { redisStore } from 'cache-manager-redis-yet';
+import * as process from 'process';
 
 @Global()
 @Module({
@@ -19,7 +20,7 @@ import { redisStore } from 'cache-manager-redis-yet';
       store: redisStore,
       socket: {
         host: '127.0.0.1',
-        port: 6379,
+        port: parseInt(process.env.REDIS_PORT, 10),
       },
     }),
     JwtModule,

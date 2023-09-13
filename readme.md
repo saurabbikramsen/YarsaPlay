@@ -25,11 +25,21 @@
 - Install and run postgres in docker,
   - use your own username, password, and set port to 5432
 
+- Install and run redis in docker in appropriate port.
+
 - In the env file
   - For DATABASE_URL variable, Change the username, password, as your postgres setup  and provide a dbname.
   - Set your 'ACCESS_TOKEN_SECRET' AND 'REFRESH_TOKEN_SECRET'
+  - provide expiry time for access and refresh token
+  - Set a appropriate port number for nestapp
+  - Initialize the time for 'REDIS_STORE_TIME'
+  - Set 'REDIS_PORT' to appropriate port where your redis is running
 
-- Install and run redis in docker in port 6379.
+- After running locally '/api' is the route for swagger documentation.
+- In swagger documentation seed the first admin user through "user/seed" route.
+- now you can login as admin and get access token and refresh token to perform other tasks.
+- Create players to play games and increase stats.
+- View leaderboard to see top 5 players.
 
 ## Installation
 
@@ -43,6 +53,8 @@
   $ prisma migrate dev
 ```
 
+
+
 ## Run Locally
 
 
@@ -50,6 +62,11 @@
   # watch mode
   $ yarn start:dev
 ```
+
+```bash
+  #seed 100 players
+  $ yarn seed
+  ````
 
 ```bash
   # build mode
@@ -76,13 +93,3 @@
   # e2e tests
   $ yarn run test:e2e
 ```
-## note:
-- Before performing the e2e test 
-  - seed one admin user.
-  - provide appropriate userId for the test that is present in the database.
-- While seeding the first admin
-  - set any appropriate gmail.
-  - As password are verified by argon set password to: 
-    - $argon2id$v=19$m=65536,t=3,p=4$z5Xdz/TdsLVl6LUUczeelg$ps344D94c2EcW1hZRoCqSYrCe3tMVhwA9qHu7OBrTCw
-    -  this password accounts to : saurab123
-  - now you can login and get access token and refresh token and create new users and delete the seeded one.

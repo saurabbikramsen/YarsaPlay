@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   HttpException,
   HttpStatus,
   Injectable,
@@ -10,12 +9,7 @@ import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import * as argon from 'argon2';
-import {
-  PlayDto,
-  PlayerDto,
-  PlayerLoginDto,
-  PlayerUpdateDto,
-} from './Dto/player.dto';
+import { PlayDto, PlayerDto, PlayerUpdateDto } from './Dto/player.dto';
 import { generateRandomString } from '../user/user.service';
 
 @Injectable()
@@ -87,8 +81,21 @@ export class PlayerService {
 
   async getLeaderboard() {
     const players = await this.prisma.player.findMany({
-      include: { statistics: true },
+      where: { active: true },
+      select: {
+        name: true,
+        active: true,
+        statistics: {
+          select: {
+            experience_point: true,
+            coins: true,
+            games_won: true,
+            games_played: true,
+          },
+        },
+      },
       orderBy: { statistics: { experience_point: 'desc' } },
+      take: 5,
     });
 
     return players.map((player, index) => {
@@ -97,48 +104,7 @@ export class PlayerService {
     });
   }
 
-  async loginPlayer(loginDetails: PlayerLoginDto) {
-    const player = await this.prisma.player.findUnique({
-      where: { email: loginDetails.email },
-    });
-    if (!player) {
-      throw new NotFoundException('Player Not found');
-    }
-    const pwMatches = await argon.verify(
-      player.password,
-      loginDetails.password,
-    );
-    if (!pwMatches) {
-      throw new HttpException(
-        "password or email doesn't match",
-        HttpStatus.UNAUTHORIZED,
-      );
-    }
-    const payload = {
-      email: player.email,
-      role: 'player',
-    };
-    const key = generateRandomString(6);
-    const accessToken = await this.generateAccessToken(payload);
-    const refreshToken = await this.generateRefreshToken({
-      ...payload,
-      refresh_key: key,
-    });
-    await this.prisma.player.update({
-      where: { email: player.email },
-      data: { refresh_key: key },
-    });
-
-    return {
-      accessToken: accessToken,
-      refreshToken: refreshToken,
-      role: 'player',
-      name: player.name,
-      id: player.id,
-    };
-  }
-
-  async addPlayer(playerDetails: PlayerDto) {
+  async loginSignup(playerDetails: PlayerDto) {
     const player = await this.prisma.player.findFirst({
       where: { email: playerDetails.email },
     });
@@ -159,31 +125,19 @@ export class PlayerService {
           statistics: { connect: { id: stats.id } },
         },
       });
-      const payload = {
-        email: playerDetails.email,
-        role: 'player',
-      };
-      const key = generateRandomString(6);
-
-      const accessToken = await this.generateAccessToken(payload);
-      const refreshToken = await this.generateRefreshToken({
-        ...payload,
-        refresh_key: key,
-      });
-      await this.prisma.player.update({
-        where: { email: newPlayer.email },
-        data: { refresh_key: key },
-      });
-
-      return {
-        accessToken: accessToken,
-        refreshToken: refreshToken,
-        role: 'player',
-        name: newPlayer.name,
-        id: newPlayer.id,
-      };
+      return await this.loginSignupDetail(newPlayer);
     } else {
-      throw new BadRequestException('EMAIL ALREADY EXISTS');
+      const pwMatches = await argon.verify(
+        player.password,
+        playerDetails.password,
+      );
+      if (!pwMatches) {
+        throw new HttpException(
+          "password or email doesn't match",
+          HttpStatus.UNAUTHORIZED,
+        );
+      }
+      return this.loginSignupDetail(player);
     }
   }
 
@@ -216,6 +170,32 @@ export class PlayerService {
     await this.prisma.player.delete({ where: { id } });
     return {
       message: 'player deleted successfully',
+    };
+  }
+
+  async loginSignupDetail(newPlayer) {
+    const payload = {
+      email: newPlayer.email,
+      role: 'player',
+    };
+    const key = generateRandomString(6);
+
+    const accessToken = await this.generateAccessToken(payload);
+    const refreshToken = await this.generateRefreshToken({
+      ...payload,
+      refresh_key: key,
+    });
+    await this.prisma.player.update({
+      where: { email: newPlayer.email },
+      data: { refresh_key: key },
+    });
+
+    return {
+      accessToken: accessToken,
+      refreshToken: refreshToken,
+      role: 'player',
+      name: newPlayer.name,
+      id: newPlayer.id,
     };
   }
 

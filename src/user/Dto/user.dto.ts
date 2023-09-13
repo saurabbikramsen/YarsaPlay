@@ -5,7 +5,6 @@ import { UserRole } from '../../enums/enums';
 export class UserDto {
   @ApiProperty()
   @IsString()
-  @IsNotEmpty()
   name: string;
 
   @ApiProperty()
@@ -20,7 +19,6 @@ export class UserDto {
   password: string;
 
   @ApiProperty()
-  @IsNotEmpty()
   @IsEnum(UserRole)
   role: UserRole;
 }

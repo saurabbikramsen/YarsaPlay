@@ -22,11 +22,10 @@ import {
   PlayerDto,
   PlayerGetDto,
   PlayerLeaderboardDto,
-  PlayerLoginDto,
   PlayerUpdateDto,
   Statistics,
 } from './Dto/player.dto';
-import { UserLoginResponseDto, UserResponseDto } from '../user/Dto/user.dto';
+import { UserResponseDto } from '../user/Dto/user.dto';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { PlayerAuthGuard } from './guard/playerAuth.guard';
@@ -45,7 +44,7 @@ export class PlayerController {
   @UseGuards(PlayerAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({
-    summary: 'Getting the leaderboard data of the players',
+    summary: 'Get the leaderboard data of the top 5 players',
   })
   @Post('leaderboard')
   @ApiResponse({ type: [PlayerLeaderboardDto] })
@@ -60,13 +59,14 @@ export class PlayerController {
         data,
         parseInt(process.env.REDIS_STORE_TIME, 10),
       );
-      return data;
+      return data.slice(0, 5);
     }
   }
   @UseGuards(PlayerAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({
-    summary: 'Get the data of a specific player',
+    summary:
+      "Get the data of a specific player or bulk of players by providing multiple Id's seperated by comma",
   })
   @Get('/:id')
   @ApiResponse({ type: PlayerGetDto })
@@ -79,7 +79,7 @@ export class PlayerController {
   @Get()
   @ApiResponse({ type: [PlayerGetDto] })
   @ApiOperation({
-    summary: 'Getting all the players',
+    summary: 'Get all the players',
   })
   getAllPlayers() {
     return this.playerService.getAllPlayers();
@@ -99,25 +99,16 @@ export class PlayerController {
   @Post()
   @ApiResponse({ type: UserResponseDto })
   @ApiOperation({
-    summary: 'Creating a new player',
+    summary: 'login(needed email & password only) or signup a player',
   })
   addPlayer(@Body() playerDto: PlayerDto) {
-    return this.playerService.addPlayer(playerDto);
-  }
-
-  @Post('login')
-  @ApiResponse({ type: UserLoginResponseDto })
-  @ApiOperation({
-    summary: 'Player login',
-  })
-  loginPlayer(@Body() loginDto: PlayerLoginDto) {
-    return this.playerService.loginPlayer(loginDto);
+    return this.playerService.loginSignup(playerDto);
   }
 
   @UseGuards(PlayerAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({
-    summary: 'Update the player data',
+    summary: 'Update the player data with the given id',
   })
   @Put('/:id')
   @ApiResponse({ type: UserResponseDto })
@@ -139,7 +130,7 @@ export class PlayerController {
   @UseGuards(PlayerAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({
-    summary: 'Deleting a player',
+    summary: 'Delete a player',
   })
   @Delete('/:id')
   @ApiResponse({ type: UserResponseDto })
