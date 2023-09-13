@@ -18,7 +18,6 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import {
-  PlayDto,
   PlayerDto,
   PlayerGetDto,
   PlayerLeaderboardDto,
@@ -90,10 +89,10 @@ export class PlayerController {
   @ApiOperation({
     summary: 'Play game to earn XP and coins',
   })
-  @Post('play')
+  @Get('play')
   @ApiResponse({ type: Statistics })
-  playGame(@Body() playDto: PlayDto) {
-    return this.playerService.playGame(playDto);
+  playGame(@Param('id') id: string) {
+    return this.playerService.playGame(id);
   }
 
   @Post()

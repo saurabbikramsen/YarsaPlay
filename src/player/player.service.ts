@@ -9,7 +9,7 @@ import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import * as argon from 'argon2';
-import { PlayDto, PlayerDto, PlayerUpdateDto } from './Dto/player.dto';
+import { PlayerDto, PlayerUpdateDto } from './Dto/player.dto';
 import { generateRandomString } from '../user/user.service';
 
 @Injectable()
@@ -63,9 +63,9 @@ export class PlayerService {
     return { message: 'player set to Inactive' };
   }
 
-  async playGame(playDetail: PlayDto) {
+  async playGame(id: string) {
     const player = await this.prisma.player.findUnique({
-      where: { email: playDetail.email },
+      where: { id },
       include: { statistics: true },
     });
     if (!player || player.active == false) {

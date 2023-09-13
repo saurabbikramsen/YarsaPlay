@@ -69,12 +69,6 @@ export class Statistics {
   id: string;
 
   @ApiProperty()
-  created_at: Date;
-
-  @ApiProperty()
-  updated_at: Date;
-
-  @ApiProperty()
   experience_point: number;
 
   @ApiProperty()
@@ -88,16 +82,7 @@ export class PlayerGetDto {
   id: string;
 
   @ApiProperty()
-  created_at: Date;
-
-  @ApiProperty()
-  updated_at: Date;
-
-  @ApiProperty()
   name: string;
-
-  @ApiProperty()
-  email: string;
 
   @ApiProperty()
   password: string;
@@ -117,16 +102,7 @@ export class PlayerLeaderboardDto {
   id: string;
 
   @ApiProperty()
-  created_at: Date;
-
-  @ApiProperty()
-  updated_at: Date;
-
-  @ApiProperty()
   name: string;
-
-  @ApiProperty()
-  email: string;
 
   @ApiProperty()
   password: string;
@@ -136,9 +112,6 @@ export class PlayerLeaderboardDto {
 
   @ApiProperty()
   rank: number;
-
-  @ApiProperty()
-  stats_id: string;
 
   @ApiProperty()
   statistics: Statistics;
