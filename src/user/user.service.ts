@@ -23,7 +23,7 @@ export class UserService {
   async getUser(id: string) {
     const user = await this.prisma.user.findFirst({
       where: { id },
-      select: { name: true, email: true, role: true },
+      select: { id: true, name: true, email: true, role: true },
     });
     if (!user) {
       throw new NotFoundException('user Not found');
@@ -32,7 +32,7 @@ export class UserService {
   }
   getAllUsers() {
     return this.prisma.user.findMany({
-      select: { name: true, email: true, role: true },
+      select: { id: true, name: true, email: true, role: true },
     });
   }
 

@@ -25,6 +25,19 @@ export class PlayerService {
       const players_ids = id.split(',');
       return this.prisma.player.findMany({
         where: { id: { in: players_ids }, active: true },
+        select: {
+          id: true,
+          name: true,
+          active: true,
+          statistics: {
+            select: {
+              games_won: true,
+              coins: true,
+              games_played: true,
+              experience_point: true,
+            },
+          },
+        },
       });
     } else {
       return this.prisma.player.findFirst({ where: { id } });
@@ -33,7 +46,7 @@ export class PlayerService {
 
   getAllPlayers() {
     return this.prisma.player.findMany({
-      select: { name: true, active: true, statistics: true },
+      select: { id: true, name: true, active: true, statistics: true },
     });
   }
 
