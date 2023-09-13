@@ -46,7 +46,7 @@ export class PlayerController {
   @ApiOperation({
     summary: 'Get the leaderboard data of the top 5 players',
   })
-  @Post('leaderboard')
+  @Get('leaderboard')
   @ApiResponse({ type: [PlayerLeaderboardDto] })
   async getLeaderboard() {
     const leaderboardData = await this.cacheManager.get('leaderboard');
