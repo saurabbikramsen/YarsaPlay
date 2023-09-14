@@ -36,7 +36,9 @@
   - Set 'REDIS_PORT' to appropriate port where your redis is running
 
 - After running locally '/api' is the route for swagger documentation.
-- In swagger documentation seed the first admin user through "user/seed" route.
+- Run e2e test which will seed the first admin user:
+  - email : saurabsen@gmail.com
+  - password : saurabsen123
 - now you can login as admin and get access token and refresh token to perform other tasks.
 - Create players to play games and increase stats.
 - View leaderboard to see top 5 players.
@@ -99,8 +101,3 @@
   $ yarn run test:e2e
 ```
 
-# Note
-- run e2e test which will seed the first admin user:
-  - email : saurabsen@gmail.com
-  - password : saurabsen123
-    
