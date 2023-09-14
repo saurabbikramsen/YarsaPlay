@@ -125,7 +125,7 @@ export class UserService {
       });
 
       if (token_data.refresh_key == player.refresh_key) {
-        const tokens = await this.tokenValidation(player, key);
+        const tokens = await this.tokenGenerator(player, key);
 
         await this.prisma.player.update({
           where: { email: token_data.email },
@@ -140,7 +140,7 @@ export class UserService {
         where: { email: token_data.email },
       });
       if (token_data.refresh_key == user.refresh_key) {
-        const tokens = await this.tokenValidation(user, key);
+        const tokens = await this.tokenGenerator(user, key);
         await this.prisma.user.update({
           where: { email: token_data.email },
           data: { refresh_key: key },
@@ -201,7 +201,7 @@ export class UserService {
     });
   }
 
-  async tokenValidation(user, key) {
+  async tokenGenerator(user, key) {
     const payload = {
       email: user.email,
       role: user.role,

@@ -6,7 +6,7 @@ import { AppModule } from '../src/app.module';
 describe('UserController E2E test (e2e)', () => {
   let app: INestApplication;
   let accessToken: string;
-  const userId = '74979d51-6d61-40bc-9a8f-73f11f910e32';
+  let userId: string;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -17,24 +17,39 @@ describe('UserController E2E test (e2e)', () => {
     await app.init();
   });
 
+  it('should seed a admin user', async () => {
+    const newUser = {
+      name: 'saurab sen',
+      password: 'saurab123',
+      email: 'saurab@gmail.com',
+    };
+    const response = await request(app.getHttpServer())
+      .post('/user/seed')
+      .send(newUser)
+      .expect(HttpStatus.CREATED);
+
+    expect(response.body).toBeDefined();
+  });
+
   it('should login the user ', async () => {
-    const loginDetail = { email: 'saurabsen@gmail.com', password: 'saurab123' };
+    const loginDetail = { email: 'saurab@gmail.com', password: 'saurab123' };
     const response = await request(app.getHttpServer())
       .post('/user/login')
       .send(loginDetail)
       .expect(201);
 
     accessToken = response.body.accessToken;
-    console.log(accessToken);
+    userId = response.body.id;
+    console.log(response.body);
     expect(response.body).toBeDefined();
   });
 
   it('should add a user', async () => {
     const newUser = {
-      name: 'shreejan sen',
-      password: 'shreejan',
-      email: 'shreejan@gmail.com',
-      role: 'staff',
+      name: 'saurab sen',
+      password: 'saurabsen123',
+      email: 'saurabsen@gmail.com',
+      role: 'admin',
     };
     const response = await request(app.getHttpServer())
       .post('/user')
@@ -51,7 +66,7 @@ describe('UserController E2E test (e2e)', () => {
       .set('Authorization', `Bearer ${accessToken}`)
       .expect(HttpStatus.OK);
 
-    accessToken = response.body.accessToken;
+    userId = response.body.id;
     expect(response.body).toBeDefined();
   });
 

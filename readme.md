@@ -22,7 +22,7 @@
 
 - Copy the variables in example.env to .env file
 
-- Install and run postgres in docker,
+- Install and run postgres in docker, 
   - use your own username, password, and set port to 5432
 
 - Install and run redis in docker in appropriate port.
@@ -69,6 +69,11 @@
   ````
 
 ```bash
+  # to view database data
+  $ npx prisma studio
+  ````
+
+```bash
   # build mode
   $ nest build
 ```
@@ -93,3 +98,9 @@
   # e2e tests
   $ yarn run test:e2e
 ```
+
+# Note
+- run e2e test which will seed the first admin user:
+  - email : saurabsen@gmail.com
+  - password : saurabsen123
+    

@@ -204,7 +204,9 @@ describe('UserService', () => {
         refresh_key: 'CoKe',
       });
       const findSpyOn = jest.spyOn(prismaService.player, 'findFirst');
-      userService.tokenValidation = jest.fn();
+      userService.tokenGenerator = jest
+        .fn()
+        .mockResolvedValueOnce(generareToken);
       const generateToken = userService.generateRefresh({
         refreshToken: jwtToken,
       });
@@ -236,8 +238,8 @@ describe('UserService', () => {
       });
       const findSpyOn = jest.spyOn(prismaService.user, 'findFirst');
       const tokenGenerate = jest
-        .spyOn(userService, 'tokenValidation')
-        .mockResolvedValue(generareToken);
+        .spyOn(userService, 'tokenGenerator')
+        .mockResolvedValueOnce(generareToken);
       const generateToken = userService.generateRefresh({
         refreshToken: jwtToken,
       });
