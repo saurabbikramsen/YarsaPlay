@@ -76,7 +76,7 @@ describe('UserService', () => {
     expect(userService).toBeDefined();
   });
 
-  describe('getUsers', () => {
+  describe('get all users', () => {
     it('return all the users', async () => {
       const allSpyOn = jest.spyOn(prismaService.user, 'findMany');
       const getUsers = await userService.getAllUsers();

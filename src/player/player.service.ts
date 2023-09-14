@@ -40,7 +40,22 @@ export class PlayerService {
         },
       });
     } else {
-      return this.prisma.player.findFirst({ where: { id } });
+      return this.prisma.player.findFirst({
+        where: { id },
+        select: {
+          id: true,
+          name: true,
+          active: true,
+          statistics: {
+            select: {
+              games_won: true,
+              coins: true,
+              games_played: true,
+              experience_point: true,
+            },
+          },
+        },
+      });
     }
   }
 
