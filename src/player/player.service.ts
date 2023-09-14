@@ -78,7 +78,7 @@ export class PlayerService {
     console.log(points);
 
     const xp = player.statistics.experience_point;
-    const stats = await this.prisma.statistics.update({
+    await this.prisma.statistics.update({
       where: { id: player.stats_id },
       data: {
         experience_point: game_won ? xp + points : xp < 20 ? xp : xp - points,
@@ -89,7 +89,10 @@ export class PlayerService {
         coins: player.statistics.coins + points,
       },
     });
-    return stats;
+    if (game_won == true) {
+      return { message: 'game won' };
+    }
+    return { message: 'game lost' };
   }
 
   async getLeaderboard() {

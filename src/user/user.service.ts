@@ -126,13 +126,14 @@ export class UserService {
 
       if (token_data.refresh_key == player.refresh_key) {
         const tokens = await this.tokenValidation(player, key);
+
         await this.prisma.player.update({
           where: { email: token_data.email },
           data: { refresh_key: key },
         });
         return tokens;
       } else {
-        throw new UnauthorizedException('you are not authorized');
+        throw new UnauthorizedException('you are not eligible');
       }
     } else if (token_data.role == 'admin' || token_data.role == 'staff') {
       const user = await this.prisma.user.findFirst({
@@ -146,7 +147,7 @@ export class UserService {
         });
         return tokens;
       } else {
-        throw new UnauthorizedException('you are not authorized');
+        throw new UnauthorizedException('you are not eligible');
       }
     }
   }

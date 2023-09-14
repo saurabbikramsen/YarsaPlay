@@ -89,7 +89,7 @@ export class PlayerController {
   @ApiOperation({
     summary: 'Play game to earn XP and coins',
   })
-  @Get('play')
+  @Get('play/:id')
   @ApiResponse({ type: Statistics })
   playGame(@Param('id') id: string) {
     return this.playerService.playGame(id);
