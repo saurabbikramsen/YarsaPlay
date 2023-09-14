@@ -35,16 +35,6 @@ export class PlayerUpdateDto {
   @IsEmail()
   @IsNotEmpty()
   email: string;
-
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  password: string;
-
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  active: boolean;
 }
 
 export class PlayerLoginDto {

@@ -9,7 +9,13 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
-import { RefreshDto, SeedDto, UserDto, UserLoginDto } from './Dto/user.dto';
+import {
+  RefreshDto,
+  SeedDto,
+  UserDto,
+  UserLoginDto,
+  UserUpdateDto,
+} from './Dto/user.dto';
 import * as argon from 'argon2';
 
 @Injectable()
@@ -152,19 +158,17 @@ export class UserService {
     }
   }
 
-  async updateUser(id: string, userDetails: UserDto) {
+  async updateUser(id: string, userDetails: UserUpdateDto) {
     const user = await this.prisma.user.findFirst({ where: { id } });
     if (!user) {
       throw new NotFoundException('user not found');
     }
-    const passwordHash = await argon.hash(userDetails.password);
 
     await this.prisma.user.update({
       where: { id },
       data: {
         name: userDetails.name,
         email: userDetails.email,
-        password: passwordHash,
         role: userDetails.role,
       },
     });

@@ -57,7 +57,7 @@ export class PlayerService {
     }
     await this.prisma.player.update({
       where: { id },
-      data: { active: false },
+      data: { active: player.active != true },
     });
 
     return { message: 'player set to Inactive' };
@@ -159,18 +159,15 @@ export class PlayerService {
 
   async updatePlayer(id: string, playerDetails: PlayerUpdateDto) {
     const player = await this.prisma.player.findFirst({ where: { id } });
-    console.log(id);
-    console.log(player);
+
     if (!player) {
       throw new NotFoundException('player not found');
     }
-    const passwordHash = await argon.hash(playerDetails.password);
     await this.prisma.player.update({
       where: { id },
       data: {
         name: playerDetails.name,
         email: playerDetails.email,
-        password: passwordHash,
       },
     });
     return {

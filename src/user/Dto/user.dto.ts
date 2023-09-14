@@ -22,6 +22,22 @@ export class UserDto {
   @IsEnum(UserRole)
   role: UserRole;
 }
+
+export class UserUpdateDto {
+  @ApiProperty()
+  @IsString()
+  name: string;
+
+  @ApiProperty()
+  @IsEmail()
+  @IsNotEmpty()
+  email: string;
+
+  @ApiProperty()
+  @IsEnum(UserRole)
+  role: UserRole;
+}
+
 export class UserLoginDto {
   @ApiProperty()
   @IsEmail()

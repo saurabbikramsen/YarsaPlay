@@ -18,6 +18,7 @@ import {
   UserLoginDto,
   UserLoginResponseDto,
   UserResponseDto,
+  UserUpdateDto,
 } from './Dto/user.dto';
 import {
   ApiBearerAuth,
@@ -96,7 +97,7 @@ export class UserController {
   })
   @Put('/:id')
   @ApiResponse({ type: UserResponseDto })
-  updateUser(@Body() userDto: UserDto, @Param('id') id: string) {
+  updateUser(@Body() userDto: UserUpdateDto, @Param('id') id: string) {
     return this.userService.updateUser(id, userDto);
   }
 
