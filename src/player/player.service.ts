@@ -74,8 +74,11 @@ export class PlayerService {
       where: { id },
       data: { active: player.active != true },
     });
-
-    return { message: 'player set to Inactive' };
+    if (player.active == true) {
+      return { message: 'player set to Inactive' };
+    } else {
+      return { message: 'player set to Active' };
+    }
   }
 
   async playGame(id: string) {

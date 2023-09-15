@@ -10,7 +10,6 @@ import {
   jwtToken,
   loginDetail,
   loginInput,
-  player,
   user,
   users,
 } from './mocks/mockedData';
@@ -22,6 +21,7 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
+import { player } from '../player/mocks/playerMockedData';
 
 const PrismaServiceMock = {
   user: {

@@ -11,6 +11,12 @@ export const players = [
   },
 ];
 
+export const statistics = {
+  games_played: 32,
+  games_won: 22,
+  coins: 232,
+  experience_point: 323,
+};
 export const player = {
   id: '74979d51-3s61-40bc-9a8f-73f11f910e32',
   name: 'ssv',

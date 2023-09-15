@@ -19,12 +19,6 @@ export const user = {
   role: 'admin',
   refresh_key: 'PePsi',
 };
-export const player = {
-  id: '74979d51-3s61-40bc-9a8f-73f11f910e32',
-  name: 'ssv',
-  role: 'player',
-  refresh_key: 'CoKe',
-};
 
 export const addUser = {
   name: 'saurab',
