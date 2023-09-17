@@ -1,6 +1,5 @@
 import {
-  HttpException,
-  HttpStatus,
+  BadRequestException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -82,12 +81,12 @@ export class PlayerService {
   }
 
   async playGame(id: string) {
-    const player = await this.prisma.player.findUnique({
+    const player = await this.prisma.player.findFirst({
       where: { id },
       include: { statistics: true },
     });
     if (!player || player.active == false) {
-      throw new UnauthorizedException('you cannot play game');
+      throw new BadRequestException('you cannot play the game');
     }
     const game_won = Boolean(Math.round(Math.random()));
     console.log(game_won);
@@ -143,20 +142,15 @@ export class PlayerService {
       where: { email: playerDetails.email },
     });
     if (!player) {
-      const stats = await this.prisma.statistics.create({
-        data: {
-          experience_point: 0,
-          games_played: 0,
-          games_won: 0,
-        },
-      });
       const passwordHash = await argon.hash(playerDetails.password);
       const newPlayer = await this.prisma.player.create({
         data: {
           name: playerDetails.name,
           email: playerDetails.email,
           password: passwordHash,
-          statistics: { connect: { id: stats.id } },
+          statistics: {
+            create: { experience_point: 0, games_played: 0, games_won: 0 },
+          },
         },
       });
       return await this.loginSignupDetail(newPlayer);
@@ -166,10 +160,7 @@ export class PlayerService {
         playerDetails.password,
       );
       if (!pwMatches) {
-        throw new HttpException(
-          "password or email doesn't match",
-          HttpStatus.UNAUTHORIZED,
-        );
+        throw new UnauthorizedException("password or email doesn't match");
       }
       return this.loginSignupDetail(player);
     }
@@ -189,7 +180,7 @@ export class PlayerService {
       },
     });
     return {
-      message: 'Player updated Successfully',
+      message: 'Player Updated Successfully',
     };
   }
 
