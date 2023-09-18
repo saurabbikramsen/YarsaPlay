@@ -29,8 +29,8 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { PlayerAuthGuard } from './guard/playerAuth.guard';
 import { StaffAuthGuard } from '../user/guard/staff.auth.guard';
-import { AdminAuthGuard } from '../user/guard/admin.auth.guard';
 import * as process from 'process';
+import { AdminAuthGuard } from '../user/guard/admin.auth.guard';
 
 @ApiTags('player')
 @Controller('player')
