@@ -36,10 +36,36 @@ export class UserService {
     }
     return user;
   }
-  getAllUsers() {
-    return this.prisma.user.findMany({
+  async getAllUsers(searchKey: string, take: number, skip: number) {
+    const users = await this.prisma.user.findMany({
+      where: { name: { contains: searchKey } },
+      skip,
+      take,
       select: { id: true, name: true, email: true, role: true },
     });
+    const count = await this.prisma.user.count({
+      where: { name: { contains: searchKey } },
+    });
+    return {
+      data: users,
+      meta: {
+        totalItems: count,
+        itemsPerPage: take,
+        currentPage: skip == 0 ? 1 : skip / take + 1,
+        totalPages: Math.ceil(count / take),
+        hasNextPage: count - skip != take && count > take,
+        hasPreviousPage: skip >= take,
+      },
+      links: {
+        first: `/user?page=1&pageSize=${take}`,
+        prev: skip == 0 ? null : `/vendor?page=${skip / take}&pageSize=${take}`,
+        next:
+          count - skip != take && count > take
+            ? `/user?page=${skip / take + 2}&pageSize=${take}`
+            : null,
+        last: `/user?page=${Math.ceil(count / take)}&pageSize=${take}`,
+      },
+    };
   }
 
   async loginUser(loginDetails: UserLoginDto) {

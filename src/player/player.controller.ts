@@ -5,15 +5,18 @@ import {
   Get,
   Inject,
   Param,
+  ParseIntPipe,
   Patch,
   Post,
   Put,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { PlayerService } from './player.service';
 import {
   ApiBearerAuth,
   ApiOperation,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -28,9 +31,9 @@ import { UserResponseDto } from '../user/Dto/user.dto';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { PlayerAuthGuard } from './guard/playerAuth.guard';
-import { StaffAuthGuard } from '../user/guard/staff.auth.guard';
 import * as process from 'process';
 import { AdminAuthGuard } from '../user/guard/admin.auth.guard';
+import { StaffAuthGuard } from '../user/guard/staff.auth.guard';
 
 @ApiTags('player')
 @Controller('player')
@@ -75,13 +78,21 @@ export class PlayerController {
 
   @UseGuards(StaffAuthGuard)
   @ApiBearerAuth()
+  @ApiQuery({ name: 'searchKey', required: false, type: String })
+  @ApiQuery({ name: 'page', required: true, type: Number })
+  @ApiQuery({ name: 'pageSize', required: true, type: Number })
   @Get()
   @ApiResponse({ type: [PlayerGetDto] })
   @ApiOperation({
     summary: 'Get all the players',
   })
-  getAllPlayers() {
-    return this.playerService.getAllPlayers();
+  getAllPlayers(
+    @Query('searchKey') searchKey = '',
+    @Query('page', ParseIntPipe) page = 1,
+    @Query('pageSize', ParseIntPipe) pageSize = 10,
+  ) {
+    const skip = page ? (page - 1) * pageSize : 0;
+    return this.playerService.getAllPlayers(searchKey, pageSize, skip);
   }
 
   @UseGuards(PlayerAuthGuard)

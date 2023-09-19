@@ -58,10 +58,49 @@ export class PlayerService {
     }
   }
 
-  getAllPlayers() {
-    return this.prisma.player.findMany({
-      select: { id: true, name: true, active: true, statistics: true },
+  async getAllPlayers(search: string, take: number, skip: number) {
+    const players = await this.prisma.player.findMany({
+      where: { name: { contains: search } },
+      skip,
+      take,
+      select: {
+        id: true,
+        name: true,
+        active: true,
+        statistics: {
+          select: {
+            coins: true,
+            experience_point: true,
+            games_played: true,
+            games_won: true,
+          },
+        },
+      },
     });
+    const count = await this.prisma.player.count({
+      where: { name: { contains: search } },
+    });
+
+    return {
+      data: players,
+      meta: {
+        totalItems: count,
+        itemsPerPage: take,
+        currentPage: skip == 0 ? 1 : skip / take + 1,
+        totalPages: Math.ceil(count / take),
+        hasNextPage: count - skip != take && count > take,
+        hasPreviousPage: skip >= take,
+      },
+      links: {
+        first: `/player?page=1&pageSize=${take}`,
+        prev: skip == 0 ? null : `/vendor?page=${skip / take}&pageSize=${take}`,
+        next:
+          count - skip != take && count > take
+            ? `/player?page=${skip / take + 2}&pageSize=${take}`
+            : null,
+        last: `/player?page=${Math.ceil(count / take)}&pageSize=${take}`,
+      },
+    };
   }
 
   async setInactive(id: string) {

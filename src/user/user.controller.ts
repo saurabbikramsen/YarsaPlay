@@ -4,8 +4,10 @@ import {
   Delete,
   Get,
   Param,
+  ParseIntPipe,
   Post,
   Put,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { UserService } from './user.service';
@@ -23,6 +25,7 @@ import {
 import {
   ApiBearerAuth,
   ApiOperation,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -44,15 +47,23 @@ export class UserController {
   getUser(@Param('id') id: string) {
     return this.userService.getUser(id);
   }
-  @UseGuards(StaffAuthGuard)
-  @ApiBearerAuth()
+  // @UseGuards(StaffAuthGuard)
+  // @ApiBearerAuth()
   @ApiOperation({
     summary: 'Get all the Users',
   })
+  @ApiQuery({ name: 'searchKey', required: false, type: String })
+  @ApiQuery({ name: 'page', required: true, type: Number })
+  @ApiQuery({ name: 'pageSize', required: true, type: Number })
   @Get()
   @ApiResponse({ type: [UserGetDto] })
-  getAllUsers() {
-    return this.userService.getAllUsers();
+  getAllUsers(
+    @Query('searchKey') searchKey = '',
+    @Query('page', ParseIntPipe) page = 1,
+    @Query('pageSize', ParseIntPipe) pageSize = 10,
+  ) {
+    const skip = page ? (page - 1) * pageSize : 0;
+    return this.userService.getAllUsers(searchKey, pageSize, skip);
   }
   @UseGuards(AdminAuthGuard)
   @ApiBearerAuth()
