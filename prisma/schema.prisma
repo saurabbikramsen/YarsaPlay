@@ -30,6 +30,7 @@ model Player {
   name     String
   email    String  @unique
   password String
+  role     String  @default("player")
   active   Boolean @default(true)
 
   statistics  Statistics @relation(fields: [stats_id], references: [id])

@@ -8,6 +8,7 @@ import { CacheModule } from '@nestjs/cache-manager';
 import type { RedisClientOptions } from 'redis';
 import { redisStore } from 'cache-manager-redis-yet';
 import * as process from 'process';
+import { CommonModule } from './utils/common.module';
 
 @Global()
 @Module({
@@ -27,6 +28,7 @@ import * as process from 'process';
     UserModule,
     PrismaModule,
     PlayerModule,
+    CommonModule,
   ],
 
   exports: [JwtModule],

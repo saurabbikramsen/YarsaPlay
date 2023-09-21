@@ -98,7 +98,7 @@ export class UserController {
     summary: 'generate a new access and refresh token',
   })
   expireRefreshToken(@Body() refreshDto: RefreshDto) {
-    return this.userService.generateRefresh(refreshDto);
+    return this.userService.generateNewTokens(refreshDto);
   }
 
   @UseGuards(AdminAuthGuard)

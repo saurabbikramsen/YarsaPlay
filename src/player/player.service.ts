@@ -2,14 +2,13 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import * as argon from 'argon2';
 import { PlayerDto, PlayerUpdateDto } from './Dto/player.dto';
-import { generateRandomString } from '../user/user.service';
+import { CommonUtils } from '../utils/common.utils';
 
 @Injectable()
 export class PlayerService {
@@ -17,6 +16,7 @@ export class PlayerService {
     private prisma: PrismaService,
     private config: ConfigService,
     private jwt: JwtService,
+    private utils: CommonUtils,
   ) {}
 
   async getPlayer(id: string) {
@@ -80,27 +80,7 @@ export class PlayerService {
     const count = await this.prisma.player.count({
       where: { name: { contains: search } },
     });
-
-    return {
-      data: players,
-      meta: {
-        totalItems: count,
-        itemsPerPage: take,
-        currentPage: skip == 0 ? 1 : skip / take + 1,
-        totalPages: Math.ceil(count / take),
-        hasNextPage: count - skip != take && count > take,
-        hasPreviousPage: skip >= take,
-      },
-      links: {
-        first: `/player?page=1&pageSize=${take}`,
-        prev: skip == 0 ? null : `/vendor?page=${skip / take}&pageSize=${take}`,
-        next:
-          count - skip != take && count > take
-            ? `/player?page=${skip / take + 2}&pageSize=${take}`
-            : null,
-        last: `/player?page=${Math.ceil(count / take)}&pageSize=${take}`,
-      },
-    };
+    return this.utils.paginatedResponse(players, skip, take, count);
   }
 
   async setInactive(id: string) {
@@ -124,31 +104,10 @@ export class PlayerService {
       where: { id },
       include: { statistics: true },
     });
-    if (!player || player.active == false) {
+    if (!player || player.active == false)
       throw new BadRequestException('you cannot play the game');
-    }
-    const game_won = Boolean(Math.round(Math.random()));
-    console.log(game_won);
 
-    const points = Math.floor(Math.random() * (20 - 10 + 1) + 10);
-    console.log(points);
-
-    const xp = player.statistics.experience_point;
-    await this.prisma.statistics.update({
-      where: { id: player.stats_id },
-      data: {
-        experience_point: game_won ? xp + points : xp < 20 ? xp : xp - points,
-        games_played: player.statistics.games_played + 1,
-        games_won: game_won
-          ? player.statistics.games_won + 1
-          : player.statistics.games_won,
-        coins: player.statistics.coins + points,
-      },
-    });
-    if (game_won == true) {
-      return { message: 'game won' };
-    }
-    return { message: 'game lost' };
+    return this.playNewGame(player);
   }
 
   async getLeaderboard() {
@@ -179,30 +138,28 @@ export class PlayerService {
   async loginSignup(playerDetails: PlayerDto) {
     const player = await this.prisma.player.findFirst({
       where: { email: playerDetails.email },
+      select: { email: true, name: true, id: true, role: true, password: true },
     });
-    if (!player) {
-      const passwordHash = await argon.hash(playerDetails.password);
-      const newPlayer = await this.prisma.player.create({
-        data: {
-          name: playerDetails.name,
-          email: playerDetails.email,
-          password: passwordHash,
-          statistics: {
-            create: { experience_point: 0, games_played: 0, games_won: 0 },
+
+    if (player) return this.utils.loginSignup(player, playerDetails.password);
+
+    const passwordHash = await argon.hash(playerDetails.password);
+    const newPlayer = await this.prisma.player.create({
+      data: {
+        name: playerDetails.name,
+        email: playerDetails.email,
+        password: passwordHash,
+        statistics: {
+          create: {
+            experience_point: 0,
+            games_played: 0,
+            games_won: 0,
+            coins: 0,
           },
         },
-      });
-      return await this.loginSignupDetail(newPlayer);
-    } else {
-      const pwMatches = await argon.verify(
-        player.password,
-        playerDetails.password,
-      );
-      if (!pwMatches) {
-        throw new UnauthorizedException("password or email doesn't match");
-      }
-      return this.loginSignupDetail(player);
-    }
+      },
+    });
+    return await this.utils.loginSignup(newPlayer, playerDetails.password);
   }
 
   async updatePlayer(id: string, playerDetails: PlayerUpdateDto) {
@@ -234,44 +191,31 @@ export class PlayerService {
     };
   }
 
-  async loginSignupDetail(newPlayer) {
-    const payload = {
-      email: newPlayer.email,
-      role: 'player',
-    };
-    const key = generateRandomString(6);
+  async playNewGame(player) {
+    const game_won = Boolean(Math.round(Math.random()));
+    const points = Math.floor(Math.random() * (20 - 10 + 1) + 10);
+    const xp = player.statistics.experience_point;
 
-    const accessToken = await this.generateAccessToken(payload);
-    const refreshToken = await this.generateRefreshToken({
-      ...payload,
-      refresh_key: key,
-    });
-    await this.prisma.player.update({
-      where: { email: newPlayer.email },
-      data: { refresh_key: key },
+    const playerData = await this.prisma.statistics.update({
+      where: { id: player.stats_id },
+      data: {
+        experience_point: game_won ? xp + points : xp < 20 ? xp : xp - points,
+        games_played: player.statistics.games_played + 1,
+        games_won: game_won
+          ? player.statistics.games_won + 1
+          : player.statistics.games_won,
+        coins: player.statistics.coins + points,
+      },
     });
 
     return {
-      accessToken: accessToken,
-      refreshToken: refreshToken,
-      role: 'player',
-      name: newPlayer.name,
-      id: newPlayer.id,
+      data: {
+        games_played: playerData.games_played,
+        game_won: playerData.games_won,
+        experience_point: playerData.experience_point,
+        coins: playerData.coins,
+      },
+      message: game_won ? 'game won' : 'game lost',
     };
-  }
-
-  async generateAccessToken(payload: any) {
-    const secret = this.config.get('ACCESS_TOKEN_SECRET');
-    return this.jwt.signAsync(payload, {
-      expiresIn: this.config.get('ACCESS_EXPIRY'),
-      secret,
-    });
-  }
-  async generateRefreshToken(payload: any) {
-    const secret = this.config.get('REFRESH_TOKEN_SECRET');
-    return this.jwt.signAsync(payload, {
-      secret,
-      expiresIn: this.config.get('REFRESH_EXPIRY'),
-    });
   }
 }
