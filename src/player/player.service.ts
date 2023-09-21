@@ -6,7 +6,6 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
-import { JwtService } from '@nestjs/jwt';
 import * as argon from 'argon2';
 import { PlayerDto, PlayerUpdateDto } from './Dto/player.dto';
 import { CommonUtils } from '../utils/common.utils';
@@ -18,14 +17,12 @@ export class PlayerService {
   constructor(
     private prisma: PrismaService,
     private config: ConfigService,
-    private jwt: JwtService,
     private utils: CommonUtils,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
   async getLeaderboard() {
     const leaderboardData = await this.cacheManager.get('leaderboard');
-    console.log('leaderBoardData', leaderboardData);
 
     if (leaderboardData) return leaderboardData;
 
@@ -51,11 +48,12 @@ export class PlayerService {
       const rank = index + 1;
       return { ...player, rank };
     });
-    return this.cacheManager.set(
+    await this.cacheManager.set(
       'leaderboard',
       rankedPlayers,
       parseInt(this.config.get('REDIS_STORE_TIME')),
     );
+    return rankedPlayers;
   }
 
   async getPlayer(id: string) {
