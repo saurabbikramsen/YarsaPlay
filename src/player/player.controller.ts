@@ -3,7 +3,6 @@ import {
   Controller,
   Delete,
   Get,
-  Inject,
   Param,
   ParseIntPipe,
   Patch,
@@ -28,20 +27,14 @@ import {
   Statistics,
 } from './Dto/player.dto';
 import { UserResponseDto } from '../user/Dto/user.dto';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Cache } from 'cache-manager';
 import { PlayerAuthGuard } from './guard/playerAuth.guard';
-import * as process from 'process';
 import { AdminAuthGuard } from '../user/guard/admin.auth.guard';
 import { StaffAuthGuard } from '../user/guard/staff.auth.guard';
 
 @ApiTags('player')
 @Controller('player')
 export class PlayerController {
-  constructor(
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
-    private playerService: PlayerService,
-  ) {}
+  constructor(private playerService: PlayerService) {}
 
   @UseGuards(PlayerAuthGuard)
   @ApiBearerAuth()
@@ -51,18 +44,7 @@ export class PlayerController {
   @Get('leaderboard')
   @ApiResponse({ type: [PlayerLeaderboardDto] })
   async getLeaderboard() {
-    const leaderboardData = await this.cacheManager.get('leaderboard');
-    if (leaderboardData) {
-      return leaderboardData;
-    } else {
-      const data = await this.playerService.getLeaderboard();
-      await this.cacheManager.set(
-        'leaderboard',
-        data,
-        parseInt(process.env.REDIS_STORE_TIME, 10),
-      );
-      return data.slice(0, 5);
-    }
+    return this.playerService.getLeaderboard();
   }
   @UseGuards(PlayerAuthGuard)
   @ApiBearerAuth()

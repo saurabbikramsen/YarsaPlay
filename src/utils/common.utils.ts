@@ -118,7 +118,7 @@ export class CommonUtils {
     };
   }
 
-  async generateTokens(token_data) {
+  async generateTokens(token_data: JwtRefreshPayload) {
     const key = this.generateRandomString(6);
 
     if (token_data.role == 'player') {
@@ -134,7 +134,7 @@ export class CommonUtils {
       return this.tokenGenerator(user, key);
     }
   }
-  async tokenGenerator(user, key) {
+  async tokenGenerator(user, key: string) {
     if (user.refresh_key == key) {
       if (user.role == 'player') await this.updatePlayer(user.email, key);
       else {

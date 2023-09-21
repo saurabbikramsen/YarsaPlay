@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -9,6 +10,8 @@ import { JwtService } from '@nestjs/jwt';
 import * as argon from 'argon2';
 import { PlayerDto, PlayerUpdateDto } from './Dto/player.dto';
 import { CommonUtils } from '../utils/common.utils';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 
 @Injectable()
 export class PlayerService {
@@ -17,7 +20,43 @@ export class PlayerService {
     private config: ConfigService,
     private jwt: JwtService,
     private utils: CommonUtils,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
+
+  async getLeaderboard() {
+    const leaderboardData = await this.cacheManager.get('leaderboard');
+    console.log('leaderBoardData', leaderboardData);
+
+    if (leaderboardData) return leaderboardData;
+
+    const players = await this.prisma.player.findMany({
+      where: { active: true },
+      select: {
+        name: true,
+        active: true,
+        statistics: {
+          select: {
+            experience_point: true,
+            coins: true,
+            games_won: true,
+            games_played: true,
+          },
+        },
+      },
+      orderBy: { statistics: { experience_point: 'desc' } },
+      take: 5,
+    });
+
+    const rankedPlayers = players.map((player, index) => {
+      const rank = index + 1;
+      return { ...player, rank };
+    });
+    return this.cacheManager.set(
+      'leaderboard',
+      rankedPlayers,
+      parseInt(this.config.get('REDIS_STORE_TIME')),
+    );
+  }
 
   async getPlayer(id: string) {
     if (id.includes(',')) {
@@ -108,31 +147,6 @@ export class PlayerService {
       throw new BadRequestException('you cannot play the game');
 
     return this.playNewGame(player);
-  }
-
-  async getLeaderboard() {
-    const players = await this.prisma.player.findMany({
-      where: { active: true },
-      select: {
-        name: true,
-        active: true,
-        statistics: {
-          select: {
-            experience_point: true,
-            coins: true,
-            games_won: true,
-            games_played: true,
-          },
-        },
-      },
-      orderBy: { statistics: { experience_point: 'desc' } },
-      take: 5,
-    });
-
-    return players.map((player, index) => {
-      const rank = index + 1;
-      return { ...player, rank };
-    });
   }
 
   async loginSignup(playerDetails: PlayerDto) {
