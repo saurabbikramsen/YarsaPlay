@@ -1,8 +1,32 @@
 {
   "$schema": "https://json.schemastore.org/nest-cli",
   "collection": "@nestjs/schematics",
-  "sourceRoot": "src",
+  "sourceRoot": "apps/yarsa_play_review/src",
   "compilerOptions": {
-    "deleteOutDir": true
+    "deleteOutDir": true,
+    "webpack": true,
+    "tsConfigPath": "apps/yarsa_play_review/tsconfig.app.json"
+  },
+  "monorepo": true,
+  "root": "apps/yarsa_play_review",
+  "projects": {
+    "yarsa_play_review": {
+      "type": "application",
+      "root": "apps/yarsa_play_review",
+      "entryFile": "main",
+      "sourceRoot": "apps/yarsa_play_review/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/yarsa_play_review/tsconfig.app.json"
+      }
+    },
+    "sse_implementation": {
+      "type": "application",
+      "root": "apps/sse_implementation",
+      "entryFile": "main",
+      "sourceRoot": "apps/sse_implementation/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/sse_implementation/tsconfig.app.json"
+      }
+    }
   }
 }
