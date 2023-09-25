@@ -10,6 +10,7 @@ import { redisStore } from 'cache-manager-redis-yet';
 import * as process from 'process';
 import { CommonModule } from './utils/common.module';
 import { EventsModule } from './chats/events.module';
+import { SseModule } from './serverSentEvents/sse.module';
 
 @Global()
 @Module({
@@ -31,6 +32,7 @@ import { EventsModule } from './chats/events.module';
     PlayerModule,
     CommonModule,
     EventsModule,
+    SseModule,
   ],
 
   exports: [JwtModule],

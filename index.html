@@ -1,10 +1,11 @@
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
-  <title>Player SSV</title>
+  <title>Player Saurab</title>
 </head>
 <style>
     input {
@@ -43,10 +44,10 @@
 </div>
 <script crossorigin="anonymous" integrity="sha384-KAZ4DtjNhLChOB/hxXuKqhMLYvx3b5MlT55xPEiNmREKRzeEm+RVPlTnAn0ajQNs" src="https://cdn.socket.io/4.3.2/socket.io.min.js"></script>
 
-<script type="text/javascript">
+<script>
   const socket = io('http://localhost:8080',{
     auth: {
-      token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InNzdkBnbWFpbC5jb20iLCJyb2xlIjoicGxheWVyIiwicmVmcmVzaF9rZXkiOiIydjVnUW0iLCJpYXQiOjE2OTU0ODE1NjQsImV4cCI6MTY5NTQ4ODc2NH0.c-KCOt6uylv9j2tW81Bdly2j2Pid5GHaRehUZThq0Uo"
+      token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InNhdXJhYkBnbWFpbC5jb20iLCJyb2xlIjoicGxheWVyIiwicmVmcmVzaF9rZXkiOiJrMlBEQlAiLCJpYXQiOjE2OTU0ODE1MjIsImV4cCI6MTY5NTQ4ODcyMn0.-BEm8UPC2zWHF2jepvlHHVJzrbrLoUYxjTwpzwxaqXY"
     }
   });
 
@@ -73,7 +74,7 @@
       if (message) {
         socket.emit('privateMessage', {
           message: message,
-          recipientId: 'df9fc093-b06c-4595-8174-44ab479356f5',
+          recipientId: 'feb53646-9bba-498a-adc8-13dbeef4fd21',
         });
         messageInput.value = '';
       }
@@ -84,7 +85,7 @@
       if (room) {
         socket.emit('join_room', {
           roomName: room,
-          userId: '0f983c9b-8cd7-40a1-ac7d-e6ee8d0d9497',
+          userId: 'df9fc093-b06c-4595-8174-44ab479356f5',
         });
         roomName.value = '';
       }
@@ -94,9 +95,9 @@
       const roomMessage = roomMessageInput.value;
       if (roomMessage) {
         socket.emit('message_room', {
-          roomName: 'shantiRoom',
+          roomName: 'saurabRoom',
           message: roomMessage,
-          userId: '0f983c9b-8cd7-40a1-ac7d-e6ee8d0d9497',
+          userId: 'df9fc093-b06c-4595-8174-44ab479356f5',
         });
         roomMessageInput.value = '';
       }
@@ -129,6 +130,7 @@
     message.innerText = 'New Event: ' + event.data;
     sseMessages.appendChild(message);
   };
+
 </script>
 </body>
 </html>

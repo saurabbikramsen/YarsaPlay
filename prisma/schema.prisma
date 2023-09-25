@@ -49,3 +49,13 @@ model Statistics {
   games_won        Int
   Player           Player?
 }
+
+model Chats {
+  id         String   @id @default(uuid())
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  sender_id   String
+  receiver_id String
+  message     String
+}
