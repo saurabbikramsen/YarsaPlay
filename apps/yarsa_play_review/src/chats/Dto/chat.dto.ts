@@ -6,3 +6,19 @@ export class ChatDto {
   @ApiProperty()
   message: string;
 }
+
+export class JoinRoomDto {
+  @ApiProperty()
+  roomName: string;
+}
+export class MessageRoomDto {
+  @ApiProperty()
+  roomName: string;
+
+  @ApiProperty()
+  message: string;
+}
+export class BroadcastAllDto {
+  @ApiProperty()
+  message: string;
+}

@@ -3,9 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
-import { JwtService } from '@nestjs/jwt';
 import {
   RefreshDto,
   SeedDto,
@@ -18,12 +16,7 @@ import { CommonUtils } from '../utils/common.utils';
 
 @Injectable()
 export class UserService {
-  constructor(
-    private prisma: PrismaService,
-    private config: ConfigService,
-    private jwtService: JwtService,
-    private utils: CommonUtils,
-  ) {}
+  constructor(private prisma: PrismaService, private utils: CommonUtils) {}
 
   async getUser(id: string) {
     const user = await this.prisma.user.findFirst({

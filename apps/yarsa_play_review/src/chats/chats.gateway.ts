@@ -9,7 +9,12 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { AsyncApiPub, AsyncApiSub } from 'nestjs-asyncapi';
-import { ChatDto } from './Dto/chat.dto';
+import {
+  BroadcastAllDto,
+  ChatDto,
+  JoinRoomDto,
+  MessageRoomDto,
+} from './Dto/chat.dto';
 import { CommonUtils } from '../utils/common.utils';
 
 export interface ClientIds {
@@ -32,9 +37,8 @@ export class ChatsGateway {
   ) {}
 
   async handleConnection(client: Socket) {
-    const token = client.handshake.auth.token;
     try {
-      const decodedToken = await this.utils.decodeRefreshToken(token);
+      const decodedToken = await this.verifyUser(client);
       client.data.user = await this.prisma.player.findFirst({
         where: { email: decodedToken.email },
       });
@@ -56,7 +60,7 @@ export class ChatsGateway {
     client: Socket,
     data: { recipientId: string; message: string },
   ): Promise<void> {
-    const sender = client.data.user;
+    const sender = await this.verifyUser(client);
     const { recipientId, message } = data;
 
     const recipientSocket: string = await this.cacheManager.get(recipientId);
@@ -82,43 +86,54 @@ export class ChatsGateway {
     channel: 'join_room',
     summary: 'Join a room new room',
     description: 'it joins a user to a room using the room name',
-    message: { payload: ChatDto },
+    message: { payload: JoinRoomDto },
   })
-  async joinRoom(client: Socket, data: { userId: string; roomName: string }) {
-    const { userId, roomName } = data;
-    console.log('roomName: ', roomName);
-    const socketId: string = await this.cacheManager.get(userId);
+  async joinRoom(client: Socket, data: { roomName: string }) {
+    const sender = await this.verifyUser(client);
+
+    const { roomName } = data;
+    const socketId: string = await this.cacheManager.get(sender.id);
     this.server.in(socketId).socketsJoin(roomName);
-    return 'joined success fully';
+    return 'joined successfully';
   }
 
   @SubscribeMessage('message_room')
+  @AsyncApiPub({
+    channel: 'message_room',
+    summary: 'Send a message to the room',
+    description:
+      'provide room name and message to broadcast the message to all the users in the room',
+    message: { payload: MessageRoomDto },
+  })
   async sendMsgRoom(
     client: Socket,
     data: {
-      userId: string;
       roomName: string;
       message: string;
     },
   ) {
-    const { userId, roomName, message } = data;
-    console.log('this is data:', message);
+    const sender = await this.verifyUser(client);
+    const { roomName, message } = data;
     this.server.to(roomName).emit('message_room', message);
-    const sockets = await this.server.in(roomName).fetchSockets();
-    console.log(sockets);
-    return userId;
   }
 
-  @SubscribeMessage('message')
-  async handleChatMessage(
+  @SubscribeMessage('message_all')
+  @AsyncApiPub({
+    channel: 'message_all',
+    summary: 'Send a message to all the connected users',
+    description: 'used to broadcast message to all the subscribed users',
+    message: { payload: BroadcastAllDto },
+  })
+  async broadCastToALl(
     client: Socket,
-    data: { recipientId: string; message: string },
+    data: { message: string },
   ): Promise<void> {
-    const sender_Id = client.id;
-    const { recipientId, message } = data;
-    console.log(sender_Id);
-    console.log('recipient', recipientId);
-
+    const { message } = data;
     this.server.emit('message', message);
+  }
+
+  async verifyUser(client: Socket) {
+    const token = client.handshake.auth.token;
+    return this.utils.decodeRefreshToken(token);
   }
 }
