@@ -16,7 +16,8 @@ export interface UserInfo {
   role: string;
   password: string;
 }
-
+const characters =
+  'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 export interface JwtAccessPayload {
   email: string;
   role: string;
@@ -52,8 +53,6 @@ export class CommonUtils {
   }
 
   generateRandomString(length: number) {
-    const characters =
-      'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     let randomString = '';
 
     for (let i = 0; i < length; i++) {
@@ -169,6 +168,11 @@ export class CommonUtils {
     await this.prisma.player.update({
       where: { email },
       data: { refresh_key },
+    });
+  }
+  async decodeRefreshToken(token: string) {
+    return this.jwt.verify(token, {
+      secret: this.config.get('REFRESH_TOKEN_SECRET'),
     });
   }
 }

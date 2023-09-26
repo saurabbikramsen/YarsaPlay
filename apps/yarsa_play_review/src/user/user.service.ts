@@ -96,18 +96,14 @@ export class UserService {
   }
 
   async generateNewTokens(refreshDetails: RefreshDto) {
-    const token_data = this.jwtService.verify(refreshDetails.refreshToken, {
-      secret: this.config.get('REFRESH_TOKEN_SECRET'),
-    });
+    const token_data = await this.utils.decodeRefreshToken(
+      refreshDetails.refreshToken,
+    );
     return this.utils.generateTokens(token_data);
   }
 
   async updateUser(id: string, userDetails: UserUpdateDto) {
-    const user = await this.prisma.user.findFirst({ where: { id } });
-    if (!user) {
-      throw new NotFoundException('user not found');
-    }
-
+    await this.getUser(id);
     await this.prisma.user.update({
       where: { id },
       data: {
@@ -122,11 +118,7 @@ export class UserService {
   }
 
   async deleteUser(id: string) {
-    const user = await this.prisma.user.findFirst({ where: { id } });
-    console.log('user is', user);
-    if (!user) {
-      throw new NotFoundException('user not found');
-    }
+    await this.getUser(id);
     await this.prisma.user.delete({ where: { id } });
     return {
       message: 'user deleted successfully',

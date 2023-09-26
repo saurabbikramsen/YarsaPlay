@@ -6,12 +6,11 @@ import {
 import { Server, Socket } from 'socket.io';
 import { Inject, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { AsyncApiPub, AsyncApiSub } from 'nestjs-asyncapi';
 import { ChatDto } from './Dto/chat.dto';
+import { CommonUtils } from '../utils/common.utils';
 
 export interface ClientIds {
   id: string;
@@ -28,18 +27,14 @@ export class ChatsGateway {
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly jwt: JwtService,
-    private readonly config: ConfigService,
+    private utils: CommonUtils,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
-  async handleConnection(client: Socket, ...args: any[]) {
+  async handleConnection(client: Socket) {
     const token = client.handshake.auth.token;
     try {
-      const decodedToken = await this.jwt.verify(token, {
-        secret: this.config.get('REFRESH_TOKEN_SECRET'),
-      });
-
+      const decodedToken = await this.utils.decodeRefreshToken(token);
       client.data.user = await this.prisma.player.findFirst({
         where: { email: decodedToken.email },
       });
