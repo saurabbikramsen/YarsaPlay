@@ -25,27 +25,19 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, document);
   app.enableCors();
   app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
-  // await app.listen(process.env.PORT, () => {
-  //   console.log('server is listening in port ' + process.env.PORT);
-  // });
+
   const asyncApiServer: AsyncServerObject = {
     url: 'ws://localhost:8080',
     protocol: 'socket.io',
     protocolVersion: '4',
     description:
       'Allows you to connect using the websocket protocol to our Socket.io server.',
-    variables: {
-      port: {
-        description: 'Secure connection (TLS) is available through port 443.',
-        default: '443',
-      },
-    },
     bindings: {},
   };
 
   const asyncApiOptions = new AsyncApiDocumentBuilder()
     .setTitle('YarsaPlay Chat Api')
-    .setDescription('Socket Chats and SSE Api')
+    .setDescription('Socket Chats Implementation Documentation')
     .setVersion('1.0')
     .setDefaultContentType('application/json')
     .addServer('yarsaPlay-server', asyncApiServer)

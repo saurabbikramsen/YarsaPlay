@@ -52,9 +52,15 @@ export class ChatsGateway {
   @SubscribeMessage('privateMessage')
   @AsyncApiPub({
     channel: 'privateMessage',
-    summary: 'Send private message to other users',
+    operationId: 'privateMessage',
+    summary: 'privateMessage',
     description: 'it uses user id to send message to other connected users',
-    message: { payload: ChatDto },
+    message: {
+      payload: ChatDto,
+      headers: {
+        auth: { description: 'Bearer access token inside a token variable' },
+      },
+    },
   })
   async handlePrivateMessage(
     client: Socket,
@@ -84,9 +90,15 @@ export class ChatsGateway {
   @SubscribeMessage('join_room')
   @AsyncApiSub({
     channel: 'join_room',
-    summary: 'Join a room new room',
+    summary: 'join_room',
+    operationId: 'join_room',
     description: 'it joins a user to a room using the room name',
-    message: { payload: JoinRoomDto },
+    message: {
+      payload: JoinRoomDto,
+      headers: {
+        auth: { description: 'Bearer access token inside a token variable' },
+      },
+    },
   })
   async joinRoom(client: Socket, data: { roomName: string }) {
     const sender = await this.verifyUser(client);
@@ -100,10 +112,16 @@ export class ChatsGateway {
   @SubscribeMessage('message_room')
   @AsyncApiPub({
     channel: 'message_room',
-    summary: 'Send a message to the room',
+    summary: 'message_room',
+    operationId: 'message_room',
     description:
       'provide room name and message to broadcast the message to all the users in the room',
-    message: { payload: MessageRoomDto },
+    message: {
+      payload: MessageRoomDto,
+      headers: {
+        auth: { description: 'Bearer access token inside a token variable' },
+      },
+    },
   })
   async sendMsgRoom(
     client: Socket,
@@ -120,9 +138,17 @@ export class ChatsGateway {
   @SubscribeMessage('message_all')
   @AsyncApiPub({
     channel: 'message_all',
-    summary: 'Send a message to all the connected users',
+    summary: 'message_all',
+    operationId: 'message_all',
     description: 'used to broadcast message to all the subscribed users',
-    message: { payload: BroadcastAllDto },
+    message: {
+      payload: BroadcastAllDto,
+      headers: {
+        auth: {
+          description: 'Bearer access token inside a token variable',
+        },
+      },
+    },
   })
   async broadCastToALl(
     client: Socket,
