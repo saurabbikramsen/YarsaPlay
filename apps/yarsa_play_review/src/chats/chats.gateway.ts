@@ -10,6 +10,8 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
+import { AsyncApiPub, AsyncApiSub } from 'nestjs-asyncapi';
+import { ChatDto } from './Dto/chat.dto';
 
 export interface ClientIds {
   id: string;
@@ -20,7 +22,7 @@ export interface ClientIds {
   },
 })
 @Injectable()
-export class EventsGateway {
+export class ChatsGateway {
   @WebSocketServer()
   server: Server;
 
@@ -32,7 +34,7 @@ export class EventsGateway {
   ) {}
 
   async handleConnection(client: Socket, ...args: any[]) {
-    const token = client.handshake.auth.token; // Get the token sent by the client
+    const token = client.handshake.auth.token;
     try {
       const decodedToken = await this.jwt.verify(token, {
         secret: this.config.get('REFRESH_TOKEN_SECRET'),
@@ -49,6 +51,12 @@ export class EventsGateway {
   }
 
   @SubscribeMessage('privateMessage')
+  @AsyncApiPub({
+    channel: 'privateMessage',
+    summary: 'Send private message to other users',
+    description: 'it uses user id to send message to other connected users',
+    message: { payload: ChatDto },
+  })
   async handlePrivateMessage(
     client: Socket,
     data: { recipientId: string; message: string },
@@ -75,6 +83,12 @@ export class EventsGateway {
   }
 
   @SubscribeMessage('join_room')
+  @AsyncApiSub({
+    channel: 'join_room',
+    summary: 'Join a room new room',
+    description: 'it joins a user to a room using the room name',
+    message: { payload: ChatDto },
+  })
   async joinRoom(client: Socket, data: { userId: string; roomName: string }) {
     const { userId, roomName } = data;
     console.log('roomName: ', roomName);
@@ -112,19 +126,4 @@ export class EventsGateway {
 
     this.server.emit('message', message);
   }
-
-  // @SubscribeMessage('events')
-  // handleEvent(@MessageBody() data: any) {
-  //   return {
-  //     data,
-  //     value: 1,
-  //   };
-  //   // return from([1, 2, 3]).pipe(
-  //   //   map((item) => ({ event: 'events', data: item, value: data })),
-  //   // );
-  // }
-  // @SubscribeMessage('identity')
-  // async identity(@MessageBody() data: number): Promise<number> {
-  //   return data;
-  // }
 }
