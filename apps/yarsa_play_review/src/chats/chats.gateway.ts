@@ -4,7 +4,7 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
@@ -39,11 +39,13 @@ export class ChatsGateway {
   async handleConnection(client: Socket) {
     try {
       const decodedToken = await this.verifyUser(client);
-      client.data.user = await this.prisma.player.findFirst({
+      const player = await this.prisma.player.findFirst({
         where: { email: decodedToken.email },
       });
-
-      await this.cacheManager.set(client.data.user.id, client.id, 86399980);
+      if (player || player.active == true) {
+        client.data.user = player;
+        await this.cacheManager.set(player.id, client.id, 86399980);
+      } else throw new BadRequestException('connection cannot be established');
     } catch (error) {
       console.log('inside error ');
       client.disconnect(true);
@@ -68,22 +70,18 @@ export class ChatsGateway {
   })
   async handlePrivateMessage(
     client: Socket,
-    data: { recipientId: string; message: string; userId: string },
+    data: { recipientId: string; message: string },
   ): Promise<void> {
-    const { recipientId, message, userId } = data;
-
+    const { recipientId, message } = data;
+    const sender = client.data.user;
     const recipientSocket: string = await this.cacheManager.get(recipientId);
-    const senderSocket: string = await this.cacheManager.get(userId);
+    this.server
+      .to([recipientSocket, client.id])
+      .emit('privateMessage', { message: message, sender: sender.id });
 
-    console.log('receiver Socket is : ', recipientSocket);
-    if (recipientSocket || senderSocket) {
-      this.server
-        .to([recipientSocket, senderSocket])
-        .emit('privateMessage', message);
-    }
     await this.prisma.chats.create({
       data: {
-        sender_id: userId,
+        sender_id: sender.id,
         receiver_id: recipientId,
         message: message,
       },
@@ -103,11 +101,10 @@ export class ChatsGateway {
       },
     },
   })
-  async joinRoom(client: Socket, data: { roomName: string; userId: string }) {
-    const { roomName, userId } = data;
-    const socketId: string = await this.cacheManager.get(userId);
-    this.server.in(socketId).socketsJoin(roomName);
-    return 'joined successfully';
+  async joinRoom(client: Socket, data: { roomName: string }) {
+    const { roomName } = data;
+    this.server.in(client.id).socketsJoin(roomName);
+    return { message: roomName + ' joined successfully' };
   }
 
   @SubscribeMessage('message_room')
@@ -127,16 +124,15 @@ export class ChatsGateway {
   async sendMsgRoom(
     client: Socket,
     data: {
-      userId: string;
       roomName: string;
       message: string;
     },
   ) {
-    const { roomName, message, userId } = data;
+    const { roomName, message } = data;
+    const sender = client.data.user;
     this.server
       .to(roomName)
-      .emit('message_room', { message: message, sender: userId });
-    return userId;
+      .emit('message_room', { message: message, sender: sender.id, roomName });
   }
 
   @SubscribeMessage('message_all')
@@ -154,15 +150,17 @@ export class ChatsGateway {
       },
     },
   })
-  async broadCastToAll(
-    client: Socket,
-    data: { message: string; userId: string },
-  ) {
-    const { message, userId } = data;
-    this.server.emit('message', message);
-    return userId;
+  async broadCastToAll(client: Socket, data: { message: string }) {
+    const { message } = data;
+    const sender = client.data.user;
+
+    this.server.emit('message', { message: message, sender: sender.id });
   }
 
+  async handleDisconnect(client: Socket) {
+    const player = client.data.user;
+    await this.cacheManager.del(player.id);
+  }
   async verifyUser(client: Socket) {
     const token = client.handshake.auth.token;
     return this.utils.decodeAccessToken(token);

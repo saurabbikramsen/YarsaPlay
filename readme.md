@@ -71,7 +71,7 @@
   $ yarn seed
   ````
 - seed 100 players
-- The password for the seeded players is their name123
+- The password for the seeded players is their_name123
 - See the seeded players using command below:
 
 ```bash

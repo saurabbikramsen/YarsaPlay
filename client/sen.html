@@ -72,8 +72,7 @@ button{
       if (message) {
         socket.emit('privateMessage', {
           message: message,
-          recipientId: 'df9fc093-b06c-4595-8174-44ab479356f5',
-          userId: 'feb53646-9bba-498a-adc8-13dbeef4fd21',
+          recipientId: '62d40860-c469-4276-9e80-e9a467ef8ab2',
 
         });
         messageInput.value = '';
@@ -85,7 +84,10 @@ button{
       if (room) {
         socket.emit('join_room', {
           roomName: room,
-          userId: 'feb53646-9bba-498a-adc8-13dbeef4fd21',
+        },(res)=>{
+          const messageElement = document.createElement('div');
+          messageElement.innerText = res.message;
+          server_message.appendChild(messageElement);
         });
         roomName.value = '';
       }
@@ -97,7 +99,6 @@ button{
         socket.emit('message_room', {
           roomName: 'saurabRoom',
           message: roomMessage,
-          userId: 'feb53646-9bba-498a-adc8-13dbeef4fd21',
         });
         roomMessageInput.value = '';
       }
@@ -105,17 +106,13 @@ button{
 
   })
 
-  socket.on('privateMessage', (message) => {
+  socket.on('privateMessage', (data) => {
     const messageElement = document.createElement('div');
-    messageElement.innerText = message;
+    messageElement.innerText = data.message;
     messages.appendChild(messageElement);
   });
 
-  socket.on('join_room', (message) => {
-    const messageElement = document.createElement('div');
-    messageElement.innerText = message;
-    server_message.appendChild(messageElement);
-  });
+
 
   socket.on('message_room', (data) => {
     const messageElement = document.createElement('div');

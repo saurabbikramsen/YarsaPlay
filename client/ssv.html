@@ -73,8 +73,7 @@
       if (message) {
         socket.emit('privateMessage', {
           message: message,
-          recipientId: 'df9fc093-b06c-4595-8174-44ab479356f5',
-          userId: '0f983c9b-8cd7-40a1-ac7d-e6ee8d0d9497',
+          recipientId: '8cf0d492-4d85-4109-849a-ef537ffb654f',
         });
         messageInput.value = '';
       }
@@ -85,7 +84,10 @@
       if (room) {
         socket.emit('join_room', {
           roomName: room,
-          userId: '0f983c9b-8cd7-40a1-ac7d-e6ee8d0d9497',
+        },(res)=>{
+          const messageElement = document.createElement('div');
+          messageElement.innerText = res.message;
+          server_message.appendChild(messageElement);
         });
         roomName.value = '';
       }
@@ -97,7 +99,6 @@
         socket.emit('message_room', {
           roomName: 'shantiRoom',
           message: roomMessage,
-          userId: '0f983c9b-8cd7-40a1-ac7d-e6ee8d0d9497',
         });
         roomMessageInput.value = '';
       }
@@ -105,20 +106,15 @@
 
   })
 
-  socket.on('privateMessage', (message) => {
+  socket.on('privateMessage', (data) => {
     const messageElement = document.createElement('div');
-    messageElement.innerText = message;
+    messageElement.innerText = data.message;
     messages.appendChild(messageElement);
   });
 
-  socket.on('join_room', (message) => {
-    const messageElement = document.createElement('div');
-    messageElement.innerText = message;
-    server_message.appendChild(messageElement);
-  });
+
 
   socket.on('message_room', (data) => {
-    console.log("message",data);
     const messageElement = document.createElement('div');
     messageElement.innerText = data.message;
     roomMessages.appendChild(messageElement);
