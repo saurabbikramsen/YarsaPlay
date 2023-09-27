@@ -1,0 +1,106 @@
+asyncapi: '2.2.0'
+info:
+  title: Yarsa Play Service
+  version: 1.0.0
+  description: Socket Chats Implementation Documentation
+channels:
+  privateMessage:
+    publish:
+      message:
+        $ref: '#/components/messages/handlePrivateMessage'
+  join_room:
+    subscribe:
+      message:
+        $ref: '#/components/messages/joinRoom'
+  message_room:
+    publish:
+      message:
+        $ref: '#/components/messages/sendMsgRoom'
+  message_all:
+    publish:
+      message:
+        $ref: '#/components/messages/broadCastToAll'
+components:
+  messages:
+    handlePrivateMessage:
+      payload:
+        type: object
+        properties:
+          recipientId:
+            type: string
+            description: user Id of the recipient
+          message:
+            type: string
+            description: message to be sent to the recipient
+          userId:
+            type: string
+            description: id of the sender
+      headers:
+        type: object
+        properties:
+          auth:
+            type: object
+            properties:
+              token:
+                type: string
+                description: Access token of the sender
+    joinRoom:
+      payload:
+        type: object
+        properties:
+          roomName:
+            type: string
+            description: Name of the room you want to join
+          userId:
+            type: string
+            description: id of the user trying to join the room
+      headers:
+        type: object
+        properties:
+          auth:
+            type: object
+            properties:
+              token:
+                type: string
+                description: Access token of the sender
+    sendMsgRoom:
+      payload:
+        type: object
+        properties:
+          roomName:
+            type: string
+            description: Name of the room you want to send the message
+          message:
+            type: string
+            description: message to be sent in the room
+          userId:
+            type: string
+            description: id of the user trying to send the message to room
+      headers:
+        type: object
+        properties:
+          auth:
+            type: object
+            properties:
+              token:
+                type: string
+                description: Access token of the sender
+    broadCastToAll:
+      payload:
+        type: object
+        properties:
+          message:
+            type: string
+            description: message to be sent to all the connected user
+          userId:
+            type: string
+            description: id of the user sending the message
+      headers:
+        type: object
+        properties:
+          auth:
+            type: object
+            properties:
+              token:
+                type: string
+                description: Access token of the sender

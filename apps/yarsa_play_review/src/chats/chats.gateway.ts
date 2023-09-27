@@ -154,7 +154,7 @@ export class ChatsGateway {
       },
     },
   })
-  async broadCastToALl(
+  async broadCastToAll(
     client: Socket,
     data: { message: string; userId: string },
   ) {

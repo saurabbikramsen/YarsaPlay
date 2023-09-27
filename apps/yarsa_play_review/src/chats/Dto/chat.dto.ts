@@ -10,6 +10,8 @@ export class ChatDto {
 export class JoinRoomDto {
   @ApiProperty()
   roomName: string;
+  @ApiProperty()
+  userId: string;
 }
 export class MessageRoomDto {
   @ApiProperty()
@@ -17,8 +19,14 @@ export class MessageRoomDto {
 
   @ApiProperty()
   message: string;
+
+  @ApiProperty()
+  userId: string;
 }
 export class BroadcastAllDto {
   @ApiProperty()
   message: string;
+
+  @ApiProperty()
+  userId: string;
 }
