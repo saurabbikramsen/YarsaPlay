@@ -46,7 +46,7 @@ button{
 <script>
   const socket = io('http://localhost:8080',{
     auth: {
-      token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InNlbkBnbWFpbC5jb20iLCJyb2xlIjoicGxheWVyIiwicmVmcmVzaF9rZXkiOiJIQkxzd2YiLCJpYXQiOjE2OTU0ODE0ODcsImV4cCI6MTY5NTQ4ODY4N30.l7tUWgoXpKTye-jd_Flmag1kzuGxoK_RZwc6Ybwx_js"
+      token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InNlbkBnbWFpbC5jb20iLCJyb2xlIjoicGxheWVyIiwiaWF0IjoxNjk1NzIxMjU0LCJleHAiOjE2OTYxNTMyNTR9.v6mYqNoJpaZfL7fnRyXnVG6zAPwW5h9h6s715oGvdlE"
     }
   });
 
@@ -73,6 +73,8 @@ button{
         socket.emit('privateMessage', {
           message: message,
           recipientId: 'df9fc093-b06c-4595-8174-44ab479356f5',
+          userId: 'feb53646-9bba-498a-adc8-13dbeef4fd21',
+
         });
         messageInput.value = '';
       }

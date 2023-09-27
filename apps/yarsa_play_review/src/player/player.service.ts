@@ -11,6 +11,7 @@ import { PlayerDto, PlayerUpdateDto } from './Dto/player.dto';
 import { CommonUtils } from '../utils/common.utils';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
+import { SseService } from '../serverSentEvents/sse.service';
 
 @Injectable()
 export class PlayerService {
@@ -18,6 +19,7 @@ export class PlayerService {
     private prisma: PrismaService,
     private config: ConfigService,
     private utils: CommonUtils,
+    private sseService: SseService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
@@ -53,6 +55,7 @@ export class PlayerService {
       rankedPlayers,
       parseInt(this.config.get('REDIS_STORE_TIME')),
     );
+    this.sseService.send('Leaderboard Updated');
     return rankedPlayers;
   }
 

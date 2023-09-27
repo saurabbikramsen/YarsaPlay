@@ -42,6 +42,7 @@ export class ChatsGateway {
       client.data.user = await this.prisma.player.findFirst({
         where: { email: decodedToken.email },
       });
+
       await this.cacheManager.set(client.data.user.id, client.id, 86399980);
     } catch (error) {
       console.log('inside error ');
@@ -58,19 +59,21 @@ export class ChatsGateway {
     message: {
       payload: ChatDto,
       headers: {
-        auth: { description: 'Bearer access token inside a token variable' },
+        auth: {
+          description: 'inside audth provide access token in token field',
+          token: { description: 'access token' },
+        },
       },
     },
   })
   async handlePrivateMessage(
     client: Socket,
-    data: { recipientId: string; message: string },
+    data: { recipientId: string; message: string; userId: string },
   ): Promise<void> {
-    const sender = await this.verifyUser(client);
-    const { recipientId, message } = data;
+    const { recipientId, message, userId } = data;
 
     const recipientSocket: string = await this.cacheManager.get(recipientId);
-    const senderSocket: string = await this.cacheManager.get(sender.id);
+    const senderSocket: string = await this.cacheManager.get(userId);
 
     console.log('receiver Socket is : ', recipientSocket);
     if (recipientSocket || senderSocket) {
@@ -80,7 +83,7 @@ export class ChatsGateway {
     }
     await this.prisma.chats.create({
       data: {
-        sender_id: sender.id,
+        sender_id: userId,
         receiver_id: recipientId,
         message: message,
       },
@@ -96,15 +99,13 @@ export class ChatsGateway {
     message: {
       payload: JoinRoomDto,
       headers: {
-        auth: { description: 'Bearer access token inside a token variable' },
+        auth: { description: 'Send access token inside a token variable' },
       },
     },
   })
-  async joinRoom(client: Socket, data: { roomName: string }) {
-    const sender = await this.verifyUser(client);
-
-    const { roomName } = data;
-    const socketId: string = await this.cacheManager.get(sender.id);
+  async joinRoom(client: Socket, data: { roomName: string; userId: string }) {
+    const { roomName, userId } = data;
+    const socketId: string = await this.cacheManager.get(userId);
     this.server.in(socketId).socketsJoin(roomName);
     return 'joined successfully';
   }
@@ -119,20 +120,23 @@ export class ChatsGateway {
     message: {
       payload: MessageRoomDto,
       headers: {
-        auth: { description: 'Bearer access token inside a token variable' },
+        auth: { description: 'Send access token inside a token variable' },
       },
     },
   })
   async sendMsgRoom(
     client: Socket,
     data: {
+      userId: string;
       roomName: string;
       message: string;
     },
   ) {
-    const sender = await this.verifyUser(client);
-    const { roomName, message } = data;
-    this.server.to(roomName).emit('message_room', message);
+    const { roomName, message, userId } = data;
+    this.server
+      .to(roomName)
+      .emit('message_room', { message: message, sender: userId });
+    return userId;
   }
 
   @SubscribeMessage('message_all')
@@ -145,21 +149,22 @@ export class ChatsGateway {
       payload: BroadcastAllDto,
       headers: {
         auth: {
-          description: 'Bearer access token inside a token variable',
+          description: 'Send access token inside a token variable',
         },
       },
     },
   })
   async broadCastToALl(
     client: Socket,
-    data: { message: string },
-  ): Promise<void> {
-    const { message } = data;
+    data: { message: string; userId: string },
+  ) {
+    const { message, userId } = data;
     this.server.emit('message', message);
+    return userId;
   }
 
   async verifyUser(client: Socket) {
     const token = client.handshake.auth.token;
-    return this.utils.decodeRefreshToken(token);
+    return this.utils.decodeAccessToken(token);
   }
 }

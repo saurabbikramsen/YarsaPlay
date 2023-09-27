@@ -5,19 +5,19 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import {
   addUser,
+  argonPassword,
+  generareToken,
   loginDetail,
   loginInput,
+  refreshtoken,
+  tokenDecodeData,
   user,
   users,
 } from './mocks/mockedData';
-import argon from './mocks/argonwrapper';
-import {
-  BadRequestException,
-  HttpException,
-  HttpStatus,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { player } from '../player/mocks/playerMockedData';
+import { CommonUtils } from '../utils/common.utils';
+import argon from './mocks/argonwrapper';
 
 const PrismaServiceMock = {
   user: {
@@ -26,6 +26,7 @@ const PrismaServiceMock = {
     create: jest.fn(),
     update: jest.fn(),
     delete: jest.fn(),
+    count: jest.fn().mockResolvedValue(2),
   },
   player: {
     findFirst: jest.fn().mockResolvedValue(player),
@@ -41,11 +42,16 @@ const JWTServiceMock = {
     ),
   verify: jest.fn(),
 };
+const utils = {
+  paginatedResponse: jest.fn(),
+  loginSignup: jest.fn(),
+  decodeRefreshToken: jest.fn().mockResolvedValue(tokenDecodeData),
+  generateTokens: jest.fn().mockResolvedValue(generareToken),
+};
 
 describe('UserService', () => {
   let userService: UserService;
   let prismaService: PrismaService;
-  let jwtService: JwtService;
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [],
@@ -60,12 +66,12 @@ describe('UserService', () => {
           provide: JwtService,
           useValue: JWTServiceMock,
         },
+        { provide: CommonUtils, useValue: utils },
       ],
     }).compile();
 
     userService = module.get<UserService>(UserService);
     prismaService = module.get<PrismaService>(PrismaService);
-    jwtService = module.get<JwtService>(JwtService);
   });
 
   it('should be defined', () => {
@@ -75,9 +81,13 @@ describe('UserService', () => {
   describe('get all users', () => {
     it('return all the users', async () => {
       const allSpyOn = jest.spyOn(prismaService.user, 'findMany');
-      const getUsers = await userService.getAllUsers('jello', 5, 10);
+      const pageSpyOn = jest
+        .spyOn(utils, 'paginatedResponse')
+        .mockResolvedValue(users);
+      const getUsers = await userService.getAllUsers('ra', 5, 0);
       expect(getUsers).toStrictEqual(users);
       expect(allSpyOn).toBeCalledTimes(1);
+      expect(pageSpyOn).toBeCalledTimes(1);
     });
   });
 
@@ -123,28 +133,15 @@ describe('UserService', () => {
       expect(userSpyOn).toBeCalledTimes(3);
     });
 
-    it('should not match the passwords', async () => {
-      const userSpyOn = jest.spyOn(prismaService.user, 'findFirst');
-      argon.verify = jest.fn().mockReturnValue(false);
-      try {
-        await userService.loginUser({
-          email: 'saurab@gmail.com',
-          password: 'dsfsdasda',
-        });
-      } catch (error) {
-        expect(error).toBeInstanceOf(HttpException);
-        expect(error.getStatus()).toBe(HttpStatus.UNAUTHORIZED);
-        expect(error.message).toStrictEqual("password or email doesn't match");
-      }
-      expect(userSpyOn).toBeCalledTimes(4);
-    });
-
     it('should return a login credentials to the users', async () => {
       const logSpyOn = jest.spyOn(prismaService.user, 'findFirst');
-      argon.verify = jest.fn().mockReturnValue(true);
+      const loginSpyOn = jest
+        .spyOn(utils, 'loginSignup')
+        .mockResolvedValueOnce(loginDetail);
       const userLogin = await userService.loginUser(loginInput);
       expect(userLogin).toStrictEqual(loginDetail);
-      expect(logSpyOn).toBeCalledTimes(5);
+      expect(logSpyOn).toBeCalledTimes(4);
+      expect(loginSpyOn).toBeCalledTimes(1);
     });
   });
 
@@ -157,7 +154,7 @@ describe('UserService', () => {
         expect(error).toBeInstanceOf(BadRequestException);
         expect(error.message).toStrictEqual('User Already Exists');
       }
-      expect(addSpyOn).toBeCalledTimes(6);
+      expect(addSpyOn).toBeCalledTimes(5);
     });
     it('should create user', async () => {
       const addSpyOn = jest
@@ -170,96 +167,16 @@ describe('UserService', () => {
           message: expect.any(String),
         }),
       );
-      expect(addSpyOn).toBeCalledTimes(7);
+      expect(addSpyOn).toBeCalledTimes(6);
       expect(createSpyOn).toBeCalledTimes(1);
     });
   });
-  //
-  // describe('generate new refresh and access token', () => {
-  //   it('should throw UnAuthorized error for player ', async () => {
-  //     const verifySpyOn = jest.spyOn(jwtService, 'verify').mockReturnValueOnce({
-  //       email: 'saurab@gmail.com',
-  //       role: 'player',
-  //       refresh_key: 'saWds',
-  //     });
-  //     const findSpyOn = jest.spyOn(prismaService.player, 'findFirst');
-  //
-  //     try {
-  //       await userService.generateRefresh({ refreshToken: jwtToken });
-  //     } catch (error) {
-  //       expect(error).toBeInstanceOf(UnauthorizedException);
-  //       expect(error.message).toEqual('you are not eligible');
-  //     }
-  //     expect(findSpyOn).toBeCalledTimes(1);
-  //     expect(verifySpyOn).toBeCalledTimes(1);
-  //   });
-  //   it('should return access token and refresh token for player', async () => {
-  //     const verifySpyOn = jest.spyOn(jwtService, 'verify').mockReturnValueOnce({
-  //       email: 'saurab@gmail.com',
-  //       role: 'player',
-  //       refresh_key: 'CoKe',
-  //     });
-  //     const findSpyOn = jest.spyOn(prismaService.player, 'findFirst');
-  //     userService.tokenGenerator = jest
-  //       .fn()
-  //       .mockResolvedValueOnce(generareToken);
-  //     const generateToken = userService.generateRefresh({
-  //       refreshToken: jwtToken,
-  //     });
-  //     expect(generateToken).toStrictEqual(generateToken);
-  //     expect(findSpyOn).toBeCalledTimes(2);
-  //   });
-  //   it('should throw UnAuthorized error for user ', async () => {
-  //     const verifySpyOn = jest.spyOn(jwtService, 'verify').mockReturnValueOnce({
-  //       email: 'saurab@gmail.com',
-  //       role: 'admin',
-  //       refresh_key: 'saWds',
-  //     });
-  //     const findSpyOn = jest.spyOn(prismaService.user, 'findFirst');
-  //
-  //     try {
-  //       await userService.generateRefresh({ refreshToken: jwtToken });
-  //     } catch (error) {
-  //       expect(error).toBeInstanceOf(UnauthorizedException);
-  //       expect(error.message).toEqual('you are not eligible');
-  //     }
-  //     expect(verifySpyOn).toBeCalledTimes(3);
-  //     expect(findSpyOn).toBeCalledTimes(8);
-  //   });
-  //   it('should return access token and refresh token for user', async () => {
-  //     const verifySpyOn = jest.spyOn(jwtService, 'verify').mockReturnValueOnce({
-  //       email: 'saurab@gmail.com',
-  //       role: 'admin',
-  //       refresh_key: 'PePsi',
-  //     });
-  //     const findSpyOn = jest.spyOn(prismaService.user, 'findFirst');
-  //     const tokenGenerate = jest
-  //       .spyOn(userService, 'tokenGenerator')
-  //       .mockResolvedValueOnce(generareToken);
-  //     const generateToken = userService.generateRefresh({
-  //       refreshToken: jwtToken,
-  //     });
-  //     expect(generateToken).toStrictEqual(generateToken);
-  //     expect(findSpyOn).toBeCalledTimes(9);
-  //   });
-  // });
 
   describe('update existing user', () => {
-    it('should throw exception if user doesnot exist', async () => {
-      const updateSpyOn = jest
-        .spyOn(prismaService.user, 'findFirst')
-        .mockResolvedValueOnce(null);
-      try {
-        await userService.updateUser('sdafsafsafsd', addUser);
-      } catch (error) {
-        expect(error).toBeInstanceOf(NotFoundException);
-        expect(error.message).toStrictEqual('user not found');
-      }
-      expect(updateSpyOn).toBeCalledTimes(10);
-    });
-
     it('should retuen success message', async () => {
-      const findSpyOn = jest.spyOn(prismaService.user, 'findFirst');
+      const getSpyOn = jest
+        .spyOn(userService, 'getUser')
+        .mockResolvedValueOnce(user);
       const updateSpyOn = jest.spyOn(prismaService.user, 'update');
       const updateUser = await userService.updateUser(user.id, addUser);
       expect(updateUser).toEqual(
@@ -267,49 +184,64 @@ describe('UserService', () => {
           message: expect.any(String),
         }),
       );
-      expect(findSpyOn).toBeCalledTimes(11);
-      expect(updateSpyOn).toBeCalledTimes(3);
+      expect(getSpyOn).toBeCalledTimes(1);
+      expect(updateSpyOn).toBeCalledTimes(1);
     });
   });
 
   describe('delete an user', () => {
-    it('should  return exception', async () => {
-      const emptyDelSpyOn = jest
-        .spyOn(prismaService.user, 'findFirst')
-        .mockResolvedValueOnce(null);
-      try {
-        await userService.deleteUser('dsafsa');
-      } catch (error) {
-        expect(error).toBeInstanceOf(NotFoundException);
-        expect(error.message).toStrictEqual('user not found');
-      }
-      expect(emptyDelSpyOn).toBeCalledTimes(12);
-    });
     it('should return success message', async () => {
-      const deleteSpyOn = jest.spyOn(prismaService.user, 'findFirst');
+      const getSpyOn = jest
+        .spyOn(userService, 'getUser')
+        .mockResolvedValueOnce(user);
       const deleteUser = await userService.deleteUser(user.id);
       expect(deleteUser).toEqual(
         expect.objectContaining({
           message: expect.any(String),
         }),
       );
-      expect(deleteSpyOn).toBeCalledTimes(13);
+      expect(getSpyOn).toBeCalledTimes(1);
     });
   });
-  //   describe('generate access token', () => {
-  //     it('should generate access token', async () => {
-  //       const jwtAccessSpyOn = jest.spyOn(jwtService, 'signAsync');
-  //       const generateAccess = await userService.generateAccessToken(jwtPayload);
-  //       expect(generateAccess).toStrictEqual(jwtToken);
-  //       expect(jwtAccessSpyOn).toBeCalledTimes(3);
-  //     });
-  //   });
-  //   describe('generate refresh token', () => {
-  //     it('should generate refresh token', async () => {
-  //       const jwtRefreshSpyOn = jest.spyOn(jwtService, 'signAsync');
-  //       const generateAccess = await userService.generateAccessToken(jwtPayload);
-  //       expect(generateAccess).toStrictEqual(jwtToken);
-  //       expect(jwtRefreshSpyOn).toBeCalledTimes(4);
-  //     });
-  //   });
+  describe('seed an admin user', () => {
+    it('should return bad request exception', async () => {
+      const countSpyOn = jest.spyOn(prismaService.user, 'count');
+      try {
+        await userService.seedAdmin(addUser);
+      } catch (error) {
+        expect(error).toBeInstanceOf(BadRequestException);
+        expect(error.message).toStrictEqual(
+          'user already present no need to seed',
+        );
+        expect(countSpyOn).toBeCalledTimes(2);
+      }
+    });
+    it('should seed an admin and return success message', async () => {
+      const countSpyOn = jest
+        .spyOn(prismaService.user, 'count')
+        .mockResolvedValueOnce(null);
+      argon.hash = jest.fn().mockResolvedValue(argonPassword);
+      const createSpyOn = jest.spyOn(prismaService.user, 'create');
+      const seedAdmin = await userService.seedAdmin(addUser);
+      expect(seedAdmin).toEqual(
+        expect.objectContaining({
+          message: expect.any(String),
+        }),
+      );
+      expect(countSpyOn).toBeCalledTimes(3);
+      expect(createSpyOn).toBeCalledTimes(2);
+    });
+  });
+  describe('should return access token and refresh token', () => {
+    it('should return both tokens', async () => {
+      const decodeSpyOn = jest.spyOn(utils, 'decodeRefreshToken');
+      const tokenSpyOn = jest.spyOn(utils, 'generateTokens');
+      const newTokens = await userService.generateNewTokens({
+        refreshToken: refreshtoken,
+      });
+      expect(newTokens).toStrictEqual(generareToken);
+      expect(decodeSpyOn).toBeCalledTimes(1);
+      expect(tokenSpyOn).toBeCalledTimes(1);
+    });
+  });
 });

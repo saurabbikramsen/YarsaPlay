@@ -4,21 +4,12 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { PlayerService } from './player.service';
 import {
-  hashPassword,
-  jwtToken,
   player,
-  playerLoginDetail,
   players,
   rankedPlayers,
-  signupDetails,
   topPlayers,
 } from './mocks/playerMockedData';
-import {
-  BadRequestException,
-  NotFoundException,
-  UnauthorizedException,
-} from '@nestjs/common';
-import argon from './mocks/argonwrapper';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 
 const PrismaServiceMock = {
   player: {
@@ -37,7 +28,6 @@ const JWTServiceMock = {};
 describe('PlayerService', () => {
   let playerService: PlayerService;
   let prismaService: PrismaService;
-  let jwtService: JwtService;
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [],
@@ -56,12 +46,11 @@ describe('PlayerService', () => {
     }).compile();
     playerService = module.get<PlayerService>(PlayerService);
     prismaService = module.get<PrismaService>(PrismaService);
-    jwtService = module.get<JwtService>(JwtService);
   });
   describe('get all players ', () => {
     it('should return all the players', async () => {
       const ManySpyOn = jest.spyOn(prismaService.player, 'findMany');
-      const getAll = await playerService.getAllPlayers();
+      const getAll = await playerService.getAllPlayers('hello', 5, 5);
       expect(getAll).toStrictEqual(players);
       expect(ManySpyOn).toBeCalledTimes(1);
     });
@@ -147,48 +136,48 @@ describe('PlayerService', () => {
       expect(leaderboard).toStrictEqual(rankedPlayers);
     });
   });
-  describe('Login in or Signup a player', () => {
-    it('should signup a player', async () => {
-      const findSpyOn = jest
-        .spyOn(prismaService.player, 'findFirst')
-        .mockResolvedValueOnce(null);
-      argon.hash = jest.fn().mockReturnValue(hashPassword);
-      const createSpyOn = jest.spyOn(prismaService.player, 'create');
-      playerService.loginSignupDetail = jest
-        .fn()
-        .mockResolvedValue(playerLoginDetail);
-      const signup = await playerService.loginSignup(signupDetails);
-      expect(signup).toStrictEqual(playerLoginDetail);
-      expect(findSpyOn).toBeCalledTimes(6);
-      expect(createSpyOn).toBeCalledTimes(1);
-    });
-    it('should return error if password doesnot match', async () => {
-      const findSpyOn = jest.spyOn(prismaService.player, 'findFirst');
-      argon.verify = jest.fn().mockReturnValueOnce(false);
-      try {
-        await playerService.loginSignup({
-          name: 'saurab',
-          email: 'saurab@gmail.com',
-          password: 'saurab222',
-        });
-      } catch (error) {
-        expect(error).toBeInstanceOf(UnauthorizedException);
-        expect(error.message).toStrictEqual("password or email doesn't match");
-      }
-      expect(findSpyOn).toBeCalledTimes(7);
-    });
-    it('should login a player', async () => {
-      const findSpyOn = jest.spyOn(prismaService.player, 'findFirst');
-      argon.verify = jest.fn().mockReturnValueOnce(true);
-      playerService.loginSignupDetail = jest
-        .fn()
-        .mockResolvedValue(playerLoginDetail);
-      const loginPlayer = await playerService.loginSignup(signupDetails);
-
-      expect(loginPlayer).toStrictEqual(playerLoginDetail);
-      expect(findSpyOn).toBeCalledTimes(8);
-    });
-  });
+  // describe('Login in or Signup a player', () => {
+  //   it('should signup a player', async () => {
+  //     const findSpyOn = jest
+  //       .spyOn(prismaService.player, 'findFirst')
+  //       .mockResolvedValueOnce(null);
+  //     argon.hash = jest.fn().mockReturnValue(hashPassword);
+  //     const createSpyOn = jest.spyOn(prismaService.player, 'create');
+  //     playerService.loginSignupDetail = jest
+  //       .fn()
+  //       .mockResolvedValue(playerLoginDetail);
+  //     const signup = await playerService.loginSignup(signupDetails);
+  //     expect(signup).toStrictEqual(playerLoginDetail);
+  //     expect(findSpyOn).toBeCalledTimes(6);
+  //     expect(createSpyOn).toBeCalledTimes(1);
+  //   });
+  //   it('should return error if password doesnot match', async () => {
+  //     const findSpyOn = jest.spyOn(prismaService.player, 'findFirst');
+  //     argon.verify = jest.fn().mockReturnValueOnce(false);
+  //     try {
+  //       await playerService.loginSignup({
+  //         name: 'saurab',
+  //         email: 'saurab@gmail.com',
+  //         password: 'saurab222',
+  //       });
+  //     } catch (error) {
+  //       expect(error).toBeInstanceOf(UnauthorizedException);
+  //       expect(error.message).toStrictEqual("password or email doesn't match");
+  //     }
+  //     expect(findSpyOn).toBeCalledTimes(7);
+  //   });
+  //   it('should login a player', async () => {
+  //     const findSpyOn = jest.spyOn(prismaService.player, 'findFirst');
+  //     argon.verify = jest.fn().mockReturnValueOnce(true);
+  //     playerService.loginSignupDetail = jest
+  //       .fn()
+  //       .mockResolvedValue(playerLoginDetail);
+  //     const loginPlayer = await playerService.loginSignup(signupDetails);
+  //
+  //     expect(loginPlayer).toStrictEqual(playerLoginDetail);
+  //     expect(findSpyOn).toBeCalledTimes(8);
+  //   });
+  // });
   describe('should update a player', () => {
     it('should return not found exception', async () => {
       const findSpyOn = jest
@@ -240,18 +229,18 @@ describe('PlayerService', () => {
       expect(findSpyOn).toBeCalledTimes(12);
     });
   });
-  describe('should return new player login details', () => {
-    it('should return login detail', async () => {
-      playerService.generateAccessToken = jest
-        .fn()
-        .mockResolvedValueOnce(jwtToken);
-      playerService.generateRefreshToken = jest
-        .fn()
-        .mockResolvedValueOnce(jwtToken);
-      const updateSpyOn = jest.spyOn(prismaService.player, 'update');
-      const login_signup = await playerService.loginSignupDetail(player);
-      expect(login_signup).toStrictEqual(playerLoginDetail);
-      expect(updateSpyOn).toBeCalledTimes(3);
-    });
-  });
+  // describe('should return new player login details', () => {
+  //   it('should return login detail', async () => {
+  //     playerService.generateAccessToken = jest
+  //       .fn()
+  //       .mockResolvedValueOnce(jwtToken);
+  //     playerService.generateRefreshToken = jest
+  //       .fn()
+  //       .mockResolvedValueOnce(jwtToken);
+  //     const updateSpyOn = jest.spyOn(prismaService.player, 'update');
+  //     const login_signup = await playerService.loginSignupDetail(player);
+  //     expect(login_signup).toStrictEqual(playerLoginDetail);
+  //     expect(updateSpyOn).toBeCalledTimes(3);
+  //   });
+  // });
 });

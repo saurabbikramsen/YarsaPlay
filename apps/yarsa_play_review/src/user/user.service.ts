@@ -71,6 +71,31 @@ export class UserService {
       throw new BadRequestException('User Already Exists');
     }
   }
+
+  async updateUser(id: string, userDetails: UserUpdateDto) {
+    await this.getUser(id);
+    await this.prisma.user.update({
+      where: { id },
+      data: {
+        name: userDetails.name,
+        email: userDetails.email,
+        role: userDetails.role,
+      },
+    });
+    return {
+      message: 'User updated Successfully',
+    };
+  }
+
+  async deleteUser(id: string) {
+    const user = await this.getUser(id);
+    console.log(user);
+    await this.prisma.user.delete({ where: { id } });
+    return {
+      message: 'user deleted successfully',
+    };
+  }
+
   async seedAdmin(seedDetails: SeedDto) {
     const count = await this.prisma.user.count();
     if (!count) {
@@ -93,28 +118,5 @@ export class UserService {
       refreshDetails.refreshToken,
     );
     return this.utils.generateTokens(token_data);
-  }
-
-  async updateUser(id: string, userDetails: UserUpdateDto) {
-    await this.getUser(id);
-    await this.prisma.user.update({
-      where: { id },
-      data: {
-        name: userDetails.name,
-        email: userDetails.email,
-        role: userDetails.role,
-      },
-    });
-    return {
-      message: 'User updated Successfully',
-    };
-  }
-
-  async deleteUser(id: string) {
-    await this.getUser(id);
-    await this.prisma.user.delete({ where: { id } });
-    return {
-      message: 'user deleted successfully',
-    };
   }
 }

@@ -46,7 +46,7 @@
 <script type="text/javascript">
   const socket = io('http://localhost:8080',{
     auth: {
-      token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InNzdkBnbWFpbC5jb20iLCJyb2xlIjoicGxheWVyIiwicmVmcmVzaF9rZXkiOiIydjVnUW0iLCJpYXQiOjE2OTU0ODE1NjQsImV4cCI6MTY5NTQ4ODc2NH0.c-KCOt6uylv9j2tW81Bdly2j2Pid5GHaRehUZThq0Uo"
+      token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InNzdkBnbWFpbC5jb20iLCJyb2xlIjoicGxheWVyIiwiaWF0IjoxNjk1NzIxMzI0LCJleHAiOjE2OTYxNTMzMjR9.Hi5keR-SvkUEPV4UiaM0YWVgCrBqg-lAfvkylb_INbY"
     }
   });
 
@@ -74,6 +74,7 @@
         socket.emit('privateMessage', {
           message: message,
           recipientId: 'df9fc093-b06c-4595-8174-44ab479356f5',
+          userId: '0f983c9b-8cd7-40a1-ac7d-e6ee8d0d9497',
         });
         messageInput.value = '';
       }
@@ -116,15 +117,16 @@
     server_message.appendChild(messageElement);
   });
 
-  socket.on('message_room', (message) => {
+  socket.on('message_room', (data) => {
+    console.log("message",data);
+
     const messageElement = document.createElement('div');
-    messageElement.innerText = message;
+    messageElement.innerText = data.message;
     roomMessages.appendChild(messageElement);
   });
 
   const eventSource = new EventSource('http://localhost:8080/sse/event');
   eventSource.onmessage = ( event ) => {
-    console.log(event.data);
     const message = document.createElement('div');
     message.innerText = 'New Event: ' + event.data;
     sseMessages.appendChild(message);

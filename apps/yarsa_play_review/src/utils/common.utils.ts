@@ -175,4 +175,10 @@ export class CommonUtils {
       secret: this.config.get('REFRESH_TOKEN_SECRET'),
     });
   }
+
+  async decodeAccessToken(token: string) {
+    return this.jwt.verify(token, {
+      secret: this.config.get('ACCESS_TOKEN_SECRET'),
+    });
+  }
 }
