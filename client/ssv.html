@@ -119,7 +119,6 @@
 
   socket.on('message_room', (data) => {
     console.log("message",data);
-
     const messageElement = document.createElement('div');
     messageElement.innerText = data.message;
     roomMessages.appendChild(messageElement);

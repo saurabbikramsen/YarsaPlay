@@ -118,9 +118,9 @@
     server_message.appendChild(messageElement);
   });
 
-  socket.on('message_room', (message) => {
+  socket.on('message_room', (data) => {
     const messageElement = document.createElement('div');
-    messageElement.innerText = message;
+    messageElement.innerText = data.message;
     roomMessages.appendChild(messageElement);
   });
 

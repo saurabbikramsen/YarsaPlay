@@ -40,7 +40,8 @@
   - email : saurabsen@gmail.com
   - password : saurabsen123
 - now you can login as admin and get access token and refresh token to perform other tasks.
-- Create players to play games and increase stats.
+- Create players and play games to increase thier stats.
+- Seed 100 players to 
 - View leaderboard to see top 5 players.
 
 ## Installation
@@ -69,6 +70,9 @@
   #seed 100 players
   $ yarn seed
   ````
+- seed 100 players
+- The password for the seeded players is their name123
+- See the seeded players using command below:
 
 ```bash
   # to view database data
