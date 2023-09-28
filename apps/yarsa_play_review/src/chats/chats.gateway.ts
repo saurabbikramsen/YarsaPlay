@@ -185,6 +185,13 @@ export class ChatsGateway {
         where: { name: roomName },
         data: { players: { disconnect: { id: sender.id } } },
       });
+      const roomPlayers = await this.prisma.rooms.findFirst({
+        where: { name: roomName },
+        select: { players: true },
+      });
+      if (roomPlayers.players.length == 0) {
+        await this.prisma.rooms.delete({ where: { name: roomName } });
+      }
       return { message: roomName + ' left successfully' };
     } else return { message: 'there is no such room ' + roomName };
   }
