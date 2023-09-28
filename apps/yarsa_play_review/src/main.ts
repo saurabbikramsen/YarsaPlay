@@ -41,6 +41,7 @@ async function bootstrap() {
     .setVersion('1.0')
     .setDefaultContentType('application/json')
     .addServer('yarsaPlay-server', asyncApiServer)
+    .addBearerAuth()
     .build();
 
   const asyncapiDocument = AsyncApiModule.createDocument(app, asyncApiOptions);

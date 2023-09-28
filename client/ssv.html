@@ -1,131 +1,151 @@
-
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta content="width=device-width, initial-scale=1.0" name="viewport">
-  <title>Player SSV</title>
-</head>
-<style>
+  <head>
+    <meta charset="UTF-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Player SSV</title>
+  </head>
+  <style>
     input {
-        padding: 8px;
-        border-radius: 5px;
-
+      padding: 8px;
+      border-radius: 5px;
     }
-    button{
-        padding: 8px;
-        border-radius: 5px;
-
+    button {
+      padding: 8px;
+      border-radius: 5px;
     }
-</style>
-<body>
-<div style="display:flex;gap: 10px; flex-direction:column;align-items: center; justify-content:center; height:600px;padding: 20px;">
-  <h1>Socket Connection</h1>
-  <div id="chat">
-    <div id="messages"></div>
-    <input id="message" placeholder="Type a message..." type="text">
-    <button id="send">Send</button>
-  </div>
-  <div id="room">
-    <div id="server_message"></div>
-    <input id="roomInput" placeholder="Enter Room Name" type="text">
+  </style>
+  <body>
+    <div
+      style="
+        display: flex;
+        gap: 10px;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 600px;
+        padding: 20px;
+      "
+    >
+      <h1>Socket Connection</h1>
+      <div id="chat">
+        <div id="messages"></div>
+        <input id="message" placeholder="Type a message..." type="text" />
+        <button id="send">Send</button>
+      </div>
+      <div id="room">
+        <div id="server_message"></div>
+        <input id="roomInput" placeholder="Enter Room Name" type="text" />
 
-    <button id="joinRoom">JoinRoom</button>
-  </div>
-  <div id="message_room">
-    <div id="room_messages"></div>
-    <input id="roomMessageInput" placeholder="Enter Room message" type="text">
+        <button id="joinRoom">JoinRoom</button>
+      </div>
+      <div id="message_room">
+        <div id="room_messages"></div>
+        <input
+          id="roomMessageInput"
+          placeholder="Enter Room message"
+          type="text"
+        />
 
-    <button id="sendRoomMessage">SendRoomMessage</button>
-  </div>
-  <h2>SSE Connection</h2>
-  <div id="sseEvents"></div>
-</div>
-<script crossorigin="anonymous" integrity="sha384-KAZ4DtjNhLChOB/hxXuKqhMLYvx3b5MlT55xPEiNmREKRzeEm+RVPlTnAn0ajQNs" src="https://cdn.socket.io/4.3.2/socket.io.min.js"></script>
+        <button id="sendRoomMessage">SendRoomMessage</button>
+      </div>
+      <h2>SSE Connection</h2>
+      <div id="sseEvents"></div>
+    </div>
+    <script
+      crossorigin="anonymous"
+      integrity="sha384-KAZ4DtjNhLChOB/hxXuKqhMLYvx3b5MlT55xPEiNmREKRzeEm+RVPlTnAn0ajQNs"
+      src="https://cdn.socket.io/4.3.2/socket.io.min.js"
+    ></script>
 
-<script type="text/javascript">
-  const socket = io('http://localhost:8080',{
-    auth: {
-      token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InNzdkBnbWFpbC5jb20iLCJyb2xlIjoicGxheWVyIiwiaWF0IjoxNjk1NzIxMzI0LCJleHAiOjE2OTYxNTMzMjR9.Hi5keR-SvkUEPV4UiaM0YWVgCrBqg-lAfvkylb_INbY"
-    }
-  });
+    <script type="text/javascript">
+      const socket = io('http://localhost:8080', {
+        extraHeaders: {
+          authorization:
+            'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InNzdkBnbWFpbC5jb20iLCJyb2xlIjoicGxheWVyIiwiaWF0IjoxNjk1NzIxMzI0LCJleHAiOjE2OTYxNTMzMjR9.Hi5keR-SvkUEPV4UiaM0YWVgCrBqg-lAfvkylb_INbY',
+        },
+      });
 
-  const messages = document.getElementById('messages');
-  const messageInput = document.getElementById('message');
-  const sendButton = document.getElementById('send');
+      const messages = document.getElementById('messages');
+      const messageInput = document.getElementById('message');
+      const sendButton = document.getElementById('send');
 
-  const server_message = document.getElementById('room_messages');
-  const joinRoomButton = document.getElementById('joinRoom');
-  const roomName = document.getElementById('roomInput');
+      const server_message = document.getElementById('room_messages');
+      const joinRoomButton = document.getElementById('joinRoom');
+      const roomName = document.getElementById('roomInput');
 
-  const roomMessages = document.getElementById('room_messages');
-  const sendRoomButton = document.getElementById('sendRoomMessage');
-  const roomMessageInput = document.getElementById('roomMessageInput');
+      const roomMessages = document.getElementById('room_messages');
+      const sendRoomButton = document.getElementById('sendRoomMessage');
+      const roomMessageInput = document.getElementById('roomMessageInput');
 
-  const sseMessages = document.getElementById('sseEvents');
+      const sseMessages = document.getElementById('sseEvents');
 
+      socket.on('connect', () => {
+        console.log('connected');
 
-  socket.on('connect', function() {
-    console.log('Connected');
-
-    sendButton.addEventListener('click', () => {
-      const message = messageInput.value;
-      if (message) {
-        socket.emit('privateMessage', {
-          message: message,
-          recipientId: '8cf0d492-4d85-4109-849a-ef537ffb654f',
+        sendButton.addEventListener('click', () => {
+          const message = messageInput.value;
+          if (message) {
+            socket.emit('privateMessage', {
+              message: message,
+              recipientId: '8cf0d492-4d85-4109-849a-ef537ffb654f',
+            });
+            messageInput.value = '';
+          }
         });
-        messageInput.value = '';
-      }
-    });
 
-    joinRoomButton.addEventListener('click', () => {
-      const room = roomName.value;
-      if (room) {
-        socket.emit('join_room', {
-          roomName: room,
-        },(res)=>{
-          const messageElement = document.createElement('div');
-          messageElement.innerText = res.message;
-          server_message.appendChild(messageElement);
+        joinRoomButton.addEventListener('click', () => {
+          const room = roomName.value;
+          if (room) {
+            socket.emit(
+              'join_room',
+              {
+                roomName: room,
+              },
+              (res) => {
+                const messageElement = document.createElement('div');
+                messageElement.innerText = res.message;
+                server_message.appendChild(messageElement);
+              },
+            );
+            roomName.value = '';
+          }
         });
-        roomName.value = '';
-      }
-    });
 
-    sendRoomButton.addEventListener('click', () => {
-      const roomMessage = roomMessageInput.value;
-      if (roomMessage) {
-        socket.emit('message_room', {
-          roomName: 'shantiRoom',
-          message: roomMessage,
+        sendRoomButton.addEventListener('click', () => {
+          const roomMessage = roomMessageInput.value;
+          if (roomMessage) {
+            socket.emit('message_room', {
+              roomName: 'shantiRoom',
+              message: roomMessage,
+            });
+            roomMessageInput.value = '';
+          }
         });
-        roomMessageInput.value = '';
-      }
-    });
+      });
 
-  })
+      socket.on('privateMessage', (data) => {
+        const messageElement = document.createElement('div');
+        messageElement.innerText = data.message;
+        messages.appendChild(messageElement);
+      });
 
-  socket.on('privateMessage', (data) => {
-    const messageElement = document.createElement('div');
-    messageElement.innerText = data.message;
-    messages.appendChild(messageElement);
-  });
+      socket.on('message_room', (data) => {
+        const messageElement = document.createElement('div');
+        messageElement.innerText = data.message;
+        roomMessages.appendChild(messageElement);
+      });
 
+      socket.on('disconnect', () => {
+        console.log('disconnected');
+      });
 
-
-  socket.on('message_room', (data) => {
-    const messageElement = document.createElement('div');
-    messageElement.innerText = data.message;
-    roomMessages.appendChild(messageElement);
-  });
-
-  const eventSource = new EventSource('http://localhost:8080/sse/event');
-  eventSource.onmessage = ( event ) => {
-    const message = document.createElement('div');
-    message.innerText = 'New Event: ' + event.data;
-    sseMessages.appendChild(message);
-  };
-</script>
-</body>
+      const eventSource = new EventSource('http://localhost:8080/sse/event');
+      eventSource.onmessage = (event) => {
+        const message = document.createElement('div');
+        message.innerText = 'New Event: ' + event.data;
+        sseMessages.appendChild(message);
+      };
+    </script>
+  </body>
 </html>

@@ -1,32 +1,29 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 export class ChatDto {
-  @ApiProperty()
+  @ApiProperty({ description: 'Id of the receiver' })
   recipientId: string;
-  @ApiProperty()
+  @ApiProperty({ description: 'Personal message for the receiver' })
   message: string;
 }
 
 export class JoinRoomDto {
-  @ApiProperty()
+  @ApiProperty({ description: 'Name of the room to join' })
   roomName: string;
-  @ApiProperty()
-  userId: string;
 }
 export class MessageRoomDto {
-  @ApiProperty()
+  @ApiProperty({
+    description: 'Name of the room where the message will be sent',
+  })
   roomName: string;
 
-  @ApiProperty()
+  @ApiProperty({ description: 'Message to be sent to the room' })
   message: string;
-
-  @ApiProperty()
-  userId: string;
 }
 export class BroadcastAllDto {
-  @ApiProperty()
+  @ApiProperty({
+    description: 'Message to boradcast to all the connected users',
+  })
   message: string;
-
-  @ApiProperty()
-  userId: string;
 }
+export class ConnectionDto {}

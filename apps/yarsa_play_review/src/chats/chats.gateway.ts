@@ -12,14 +12,12 @@ import { AsyncApiPub, AsyncApiSub } from 'nestjs-asyncapi';
 import {
   BroadcastAllDto,
   ChatDto,
+  ConnectionDto,
   JoinRoomDto,
   MessageRoomDto,
 } from './Dto/chat.dto';
 import { CommonUtils } from '../utils/common.utils';
 
-export interface ClientIds {
-  id: string;
-}
 @WebSocketGateway({
   cors: {
     origin: '*',
@@ -36,19 +34,34 @@ export class ChatsGateway {
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
+  @AsyncApiSub({
+    channel: 'connect',
+    summary: 'connect',
+    operationId: 'connect',
+    description: 'it is used to connect to the server using socket',
+    message: {
+      payload: ConnectionDto,
+      headers: {
+        authorization: {
+          description: 'access token of the user',
+        },
+      },
+    },
+  })
   async handleConnection(client: Socket) {
     try {
       const decodedToken = await this.verifyUser(client);
       const player = await this.prisma.player.findFirst({
         where: { email: decodedToken.email },
       });
-      if (player || player.active == true) {
+      if (player && player.active == true) {
         client.data.user = player;
         await this.cacheManager.set(player.id, client.id, 86399980);
-      } else throw new BadRequestException('connection cannot be established');
+      } else throw new BadRequestException('you are not eligible');
     } catch (error) {
-      console.log('inside error ');
+      console.log('inside error');
       client.disconnect(true);
+      return 'disconnected';
     }
   }
 
@@ -57,21 +70,16 @@ export class ChatsGateway {
     channel: 'privateMessage',
     operationId: 'privateMessage',
     summary: 'privateMessage',
-    description: 'it uses user id to send message to other connected users',
+    description:
+      'it uses recipient id to send message to other connected users and returns senders id and message',
     message: {
       payload: ChatDto,
-      headers: {
-        auth: {
-          description: 'inside audth provide access token in token field',
-          token: { description: 'access token' },
-        },
-      },
     },
   })
   async handlePrivateMessage(
     client: Socket,
     data: { recipientId: string; message: string },
-  ): Promise<void> {
+  ) {
     const { recipientId, message } = data;
     const sender = client.data.user;
     const recipientSocket: string = await this.cacheManager.get(recipientId);
@@ -86,6 +94,7 @@ export class ChatsGateway {
         message: message,
       },
     });
+    return { message: 'i am hero' };
   }
 
   @SubscribeMessage('join_room')
@@ -96,9 +105,6 @@ export class ChatsGateway {
     description: 'it joins a user to a room using the room name',
     message: {
       payload: JoinRoomDto,
-      headers: {
-        auth: { description: 'Send access token inside a token variable' },
-      },
     },
   })
   async joinRoom(client: Socket, data: { roomName: string }) {
@@ -116,9 +122,6 @@ export class ChatsGateway {
       'provide room name and message to broadcast the message to all the users in the room',
     message: {
       payload: MessageRoomDto,
-      headers: {
-        auth: { description: 'Send access token inside a token variable' },
-      },
     },
   })
   async sendMsgRoom(
@@ -143,11 +146,6 @@ export class ChatsGateway {
     description: 'used to broadcast message to all the subscribed users',
     message: {
       payload: BroadcastAllDto,
-      headers: {
-        auth: {
-          description: 'Send access token inside a token variable',
-        },
-      },
     },
   })
   async broadCastToAll(client: Socket, data: { message: string }) {
@@ -159,10 +157,11 @@ export class ChatsGateway {
 
   async handleDisconnect(client: Socket) {
     const player = client.data.user;
-    await this.cacheManager.del(player.id);
+    if (player) await this.cacheManager.del(player.id);
   }
   async verifyUser(client: Socket) {
-    const token = client.handshake.auth.token;
-    return this.utils.decodeAccessToken(token);
+    const token = client.handshake.headers.authorization;
+    const realToken = token.slice(7, token.length);
+    return this.utils.decodeAccessToken(realToken);
   }
 }

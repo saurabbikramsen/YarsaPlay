@@ -23,7 +23,6 @@ export class PlayerAuthGuard implements CanActivate {
       const authorization = request?.headers.authorization;
       if (authorization) {
         const token = authorization.slice(7, authorization.length);
-        console.log('token is', token);
         const token_data = await this.jwtService.verify(token, {
           secret: this.config.get('ACCESS_TOKEN_SECRET'),
         });
