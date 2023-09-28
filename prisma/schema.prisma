@@ -35,7 +35,9 @@ model Player {
 
   statistics  Statistics @relation(fields: [stats_id], references: [id])
   stats_id    String     @unique
-  refresh_key String?    @default("dsfa")
+  refresh_key String?
+  Rooms       Rooms?     @relation(fields: [roomsId], references: [id])
+  roomsId     String?
 }
 
 model Statistics {
@@ -58,4 +60,16 @@ model Chats {
   sender_id   String
   receiver_id String
   message     String
+  Rooms       Rooms?  @relation(fields: [roomsId], references: [id])
+  roomsId     String?
+}
+
+model Rooms {
+  id         String   @id @default(uuid())
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  name    String   @unique
+  players Player[]
+  chats   Chats[]
 }

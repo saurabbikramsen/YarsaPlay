@@ -4,7 +4,12 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
@@ -94,7 +99,6 @@ export class ChatsGateway {
         message: message,
       },
     });
-    return { message: 'i am hero' };
   }
 
   @SubscribeMessage('join_room')
@@ -109,6 +113,12 @@ export class ChatsGateway {
   })
   async joinRoom(client: Socket, data: { roomName: string }) {
     const { roomName } = data;
+    const player = client.data.user;
+    await this.prisma.rooms.upsert({
+      where: { name: roomName },
+      update: { players: { connect: { id: player.id } } },
+      create: { name: roomName, players: { connect: { id: player.id } } },
+    });
     this.server.in(client.id).socketsJoin(roomName);
     return { message: roomName + ' joined successfully' };
   }
@@ -133,9 +143,23 @@ export class ChatsGateway {
   ) {
     const { roomName, message } = data;
     const sender = client.data.user;
+    const room = await this.prisma.rooms.findFirst({
+      where: { name: roomName },
+    });
+    if (room) {
+      const chat = await this.prisma.chats.create({
+        data: { sender_id: sender.id, message, receiver_id: roomName },
+      });
+      await this.prisma.rooms.update({
+        where: { id: room.id },
+        data: { chats: { connect: { id: chat.id } } },
+      });
+    } else {
+      throw new NotFoundException('no room available');
+    }
     this.server
       .to(roomName)
-      .emit('message_room', { message: message, sender: sender.id, roomName });
+      .emit('message_room', { message, sender: sender.id, roomName });
   }
 
   @SubscribeMessage('message_all')
