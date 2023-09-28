@@ -49,6 +49,14 @@
 
         <button id="sendRoomMessage">SendRoomMessage</button>
       </div>
+
+      <div id="leave_room">
+        <div id="leave_message"></div>
+        <input id="leave_room_name" placeholder="Enter Room Name" type="text" />
+
+        <button id="leaveRoom">LeaveRoom</button>
+      </div>
+
       <h2>SSE Connection</h2>
       <div id="sseEvents"></div>
     </div>
@@ -73,6 +81,10 @@
       const server_message = document.getElementById('room_messages');
       const joinRoomButton = document.getElementById('joinRoom');
       const roomName = document.getElementById('roomInput');
+
+      const leave_message = document.getElementById('leave_message');
+      const leaveRoomButton = document.getElementById('leaveRoom');
+      const leaveRoomName = document.getElementById('leave_room_name');
 
       const roomMessages = document.getElementById('room_messages');
       const sendRoomButton = document.getElementById('sendRoomMessage');
@@ -134,6 +146,18 @@
         const messageElement = document.createElement('div');
         messageElement.innerText = data.message;
         roomMessages.appendChild(messageElement);
+      });
+
+      leaveRoomButton.addEventListener('click', () => {
+        const leaveRoom = leaveRoomName.value;
+        if (leaveRoom) {
+          socket.emit('leave_room', { roomName: leaveRoom }, (res) => {
+            const messageElement = document.createElement('div');
+            messageElement.innerHTML = res.message;
+            leave_message.appendChild(messageElement);
+          });
+          leaveRoomName.value = '';
+        }
       });
 
       socket.on('disconnect', () => {

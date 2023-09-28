@@ -150,6 +150,7 @@ export class ChatsGateway {
       const chat = await this.prisma.chats.create({
         data: { sender_id: sender.id, message, receiver_id: roomName },
       });
+
       await this.prisma.rooms.update({
         where: { id: room.id },
         data: { chats: { connect: { id: chat.id } } },
@@ -176,11 +177,16 @@ export class ChatsGateway {
     const { roomName } = data;
     const sender = client.data.user;
     client.leave(roomName);
-    await this.prisma.rooms.update({
+    const room = await this.prisma.rooms.findFirst({
       where: { name: roomName },
-      data: { players: { disconnect: { id: sender.id } } },
     });
-    return { message: 'left room successfully' };
+    if (room) {
+      await this.prisma.rooms.update({
+        where: { name: roomName },
+        data: { players: { disconnect: { id: sender.id } } },
+      });
+      return { message: roomName + ' left successfully' };
+    } else return { message: 'there is no such room ' + roomName };
   }
   @SubscribeMessage('message_all')
   @AsyncApiPub({
