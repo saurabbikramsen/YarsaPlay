@@ -226,7 +226,7 @@ export class PlayerService {
     return {
       data: {
         games_played: playerData.games_played,
-        game_won: playerData.games_won,
+        games_won: playerData.games_won,
         experience_point: playerData.experience_point,
         coins: playerData.coins,
       },

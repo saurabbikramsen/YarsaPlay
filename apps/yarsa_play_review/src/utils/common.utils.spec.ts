@@ -108,3 +108,34 @@
 //     expect(findSpyOn).toBeCalledTimes(9);
 //   });
 // });
+
+// describe('should return new player login details', () => {
+//   it('should return login detail', async () => {
+//     playerService.generateAccessToken = jest
+//       .fn()
+//       .mockResolvedValueOnce(jwtToken);
+//     playerService.generateRefreshToken = jest
+//       .fn()
+//       .mockResolvedValueOnce(jwtToken);
+//     const updateSpyOn = jest.spyOn(prismaService.player, 'update');
+//     const login_signup = await playerService.loginSignupDetail(player);
+//     expect(login_signup).toStrictEqual(playerLoginDetail);
+//     expect(updateSpyOn).toBeCalledTimes(3);
+//   });
+// });
+
+//   it('should return error if password doesnot match', async () => {
+//     const findSpyOn = jest.spyOn(prismaService.player, 'findFirst');
+//     argon.verify = jest.fn().mockReturnValueOnce(false);
+//     try {
+//       await playerService.loginSignup({
+//         name: 'saurab',
+//         email: 'saurab@gmail.com',
+//         password: 'saurab222',
+//       });
+//     } catch (error) {
+//       expect(error).toBeInstanceOf(UnauthorizedException);
+//       expect(error.message).toStrictEqual("password or email doesn't match");
+//     }
+//     expect(findSpyOn).toBeCalledTimes(7);
+//   });

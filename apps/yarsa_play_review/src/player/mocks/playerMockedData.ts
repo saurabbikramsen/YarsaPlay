@@ -1,5 +1,3 @@
-import { Statistics } from '../Dto/player.dto';
-
 export const players = [
   {
     id: '74979d51-6d61-40bc-9a8f-73f11f910e32',
@@ -19,11 +17,16 @@ export const statistics = {
   coins: 232,
   experience_point: 323,
 };
+export const playResponse = {
+  data: statistics,
+  message: 'game won' && 'game lost',
+};
 export const player = {
   id: '74979d51-3s61-40bc-9a8f-73f11f910e32',
   name: 'saurab',
   role: 'player',
-  statistics: Statistics,
+  active: true,
+  statistics: statistics,
 };
 
 export const topPlayers = [
@@ -31,31 +34,31 @@ export const topPlayers = [
     id: '749734251-3s61-40bc-9a8f-73f11f910e32',
     name: 'ssv',
     role: 'player',
-    statistics: Statistics,
+    statistics: statistics,
   },
   {
     id: '74979d51-3s61-df34-9a8f-73f11f910e32',
     name: 'ssv',
     role: 'player',
-    statistics: Statistics,
+    statistics: statistics,
   },
   {
     id: '74979d51-23d5-40bc-9a8f-73f11f910e32',
     name: 'ssv',
     role: 'player',
-    statistics: Statistics,
+    statistics: statistics,
   },
   {
     id: '74vf3h51-3s61-40bc-9a8f-73f11f910e32',
     name: 'ssv',
     role: 'player',
-    statistics: Statistics,
+    statistics: statistics,
   },
   {
     id: '71w3fd51-3s61-40bc-9a8f-73f11f910e32',
     name: 'ssv',
     role: 'player',
-    statistics: Statistics,
+    statistics: statistics,
   },
 ];
 
@@ -64,35 +67,35 @@ export const rankedPlayers = [
     id: '749734251-3s61-40bc-9a8f-73f11f910e32',
     name: 'ssv',
     role: 'player',
-    statistics: Statistics,
+    statistics: statistics,
     rank: 1,
   },
   {
     id: '74979d51-3s61-df34-9a8f-73f11f910e32',
     name: 'ssv',
     role: 'player',
-    statistics: Statistics,
+    statistics: statistics,
     rank: 2,
   },
   {
     id: '74979d51-23d5-40bc-9a8f-73f11f910e32',
     name: 'ssv',
     role: 'player',
-    statistics: Statistics,
+    statistics: statistics,
     rank: 3,
   },
   {
     id: '74vf3h51-3s61-40bc-9a8f-73f11f910e32',
     name: 'ssv',
     role: 'player',
-    statistics: Statistics,
+    statistics: statistics,
     rank: 4,
   },
   {
     id: '71w3fd51-3s61-40bc-9a8f-73f11f910e32',
     name: 'ssv',
     role: 'player',
-    statistics: Statistics,
+    statistics: statistics,
     rank: 5,
   },
 ];
