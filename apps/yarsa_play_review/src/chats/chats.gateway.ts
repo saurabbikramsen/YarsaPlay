@@ -162,6 +162,26 @@ export class ChatsGateway {
       .emit('message_room', { message, sender: sender.id, roomName });
   }
 
+  @SubscribeMessage('leave_room')
+  @AsyncApiSub({
+    channel: 'leave_room',
+    summary: 'leave_room',
+    operationId: 'leave_room',
+    description: 'leave a room by providing room name',
+    message: {
+      payload: JoinRoomDto,
+    },
+  })
+  async leaveRoom(client: Socket, data: { roomName: string }) {
+    const { roomName } = data;
+    const sender = client.data.user;
+    client.leave(roomName);
+    await this.prisma.rooms.update({
+      where: { name: roomName },
+      data: { players: { disconnect: { id: sender.id } } },
+    });
+    return { message: 'left room successfully' };
+  }
   @SubscribeMessage('message_all')
   @AsyncApiPub({
     channel: 'message_all',

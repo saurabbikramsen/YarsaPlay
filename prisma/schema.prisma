@@ -36,8 +36,7 @@ model Player {
   statistics  Statistics @relation(fields: [stats_id], references: [id])
   stats_id    String     @unique
   refresh_key String?
-  Rooms       Rooms?     @relation(fields: [roomsId], references: [id])
-  roomsId     String?
+  Rooms       Rooms[]
 }
 
 model Statistics {
