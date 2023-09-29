@@ -64,11 +64,13 @@ describe('PlayerController E2E test (e2e)', () => {
 
     expect(response.body).toBeDefined();
   });
+
   it('should delete a player', async () => {
     const response = await request(app.getHttpServer())
       .delete(`/player/${playerId}`)
       .set('Authorization', `Bearer ${accessToken}`)
-      .expect(201);
+      .expect(200);
+    console.log('player id', response.body);
     expect(response.body).toBeDefined();
   });
 });

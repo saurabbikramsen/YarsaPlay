@@ -74,6 +74,7 @@ describe('UserController E2E test (e2e)', () => {
     const response = await request(app.getHttpServer())
       .get('/user')
       .set('Authorization', `Bearer ${accessToken}`)
+      .query({ searchKey: 'ra', page: 1, pageSize: 5 })
       .expect(200);
 
     expect(response.body).toBeDefined();

@@ -27,9 +27,8 @@ export class PlayerAuthGuard implements CanActivate {
           secret: this.config.get('ACCESS_TOKEN_SECRET'),
         });
 
-        console.log('token data is', token_data);
-        const player = await this.prisma.player.findFirst({
-          where: { email: token_data.email },
+        const player = await this.prisma.player.findUnique({
+          where: { id: token_data.id },
         });
 
         if (

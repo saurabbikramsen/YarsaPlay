@@ -178,6 +178,7 @@ export class PlayerService {
   }
 
   async updatePlayer(id: string, playerDetails: PlayerUpdateDto) {
+    console.log('udating the player');
     const player = await this.prisma.player.findFirst({ where: { id } });
 
     if (!player) {
@@ -190,6 +191,7 @@ export class PlayerService {
         email: playerDetails.email,
       },
     });
+    console.log('succesfully player updated');
     return {
       message: 'Player Updated Successfully',
     };
@@ -200,6 +202,7 @@ export class PlayerService {
     if (!player) {
       throw new NotFoundException('player not found');
     }
+    console.log('player found and now deleting');
     await this.prisma.player.delete({ where: { id } });
     return {
       message: 'player deleted successfully',

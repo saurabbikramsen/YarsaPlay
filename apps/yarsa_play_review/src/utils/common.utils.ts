@@ -19,11 +19,11 @@ export interface UserInfo {
 const characters =
   'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 export interface JwtAccessPayload {
-  email: string;
+  id: string;
   role: string;
 }
 export interface JwtRefreshPayload {
-  email: string;
+  id: string;
   role: string;
   refresh_key: string;
 }
@@ -93,24 +93,16 @@ export class CommonUtils {
         HttpStatus.UNAUTHORIZED,
       );
     }
-    const payload = {
-      email: userInfo.email,
-      role: userInfo.role,
-    };
     const key = this.generateRandomString(6);
 
-    const accessToken = await this.generateAccessToken(payload);
-    const refreshToken = await this.generateRefreshToken({
-      ...payload,
-      refresh_key: key,
-    });
+    const tokens = await this.tokenPayload(userInfo, key);
 
     if (userInfo.role == 'player') await this.updatePlayer(userInfo.email, key);
     else await this.updateUser(userInfo.email, key);
 
     return {
-      accessToken: accessToken,
-      refreshToken: refreshToken,
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
       role: userInfo.role,
       name: userInfo.name,
       id: userInfo.id,
@@ -122,13 +114,13 @@ export class CommonUtils {
 
     if (token_data.role == 'player') {
       const player = await this.prisma.player.findFirst({
-        where: { email: token_data.email },
+        where: { id: token_data.id },
       });
 
       return this.tokenGenerator(player, key);
     } else if (token_data.role == 'admin' || token_data.role == 'staff') {
       const user = await this.prisma.user.findFirst({
-        where: { email: token_data.email },
+        where: { id: token_data.id },
       });
       return this.tokenGenerator(user, key);
     }
@@ -139,21 +131,7 @@ export class CommonUtils {
       else {
         await this.updateUser(user.email, key);
       }
-
-      const payload = {
-        email: user.email,
-        role: user.role,
-      };
-      const newAccessToken = await this.generateAccessToken(payload);
-      const newRefreshToken = await this.generateRefreshToken({
-        ...payload,
-        refresh_key: key,
-      });
-
-      return {
-        accessToken: newAccessToken,
-        refreshToken: newRefreshToken,
-      };
+      return this.tokenPayload;
     } else {
       throw new UnauthorizedException('you are not eligible');
     }
@@ -180,5 +158,17 @@ export class CommonUtils {
     return this.jwt.verify(token, {
       secret: this.config.get('ACCESS_TOKEN_SECRET'),
     });
+  }
+  async tokenPayload(userInfo: UserInfo, key: string) {
+    const payload = {
+      id: userInfo.id,
+      role: userInfo.role,
+    };
+    const accessToken = await this.generateAccessToken(payload);
+    const refreshToken = await this.generateRefreshToken({
+      ...payload,
+      refresh_key: key,
+    });
+    return { accessToken, refreshToken };
   }
 }

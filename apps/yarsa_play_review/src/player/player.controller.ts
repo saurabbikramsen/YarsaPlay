@@ -121,12 +121,13 @@ export class PlayerController {
 
   @UseGuards(PlayerAuthGuard)
   @ApiBearerAuth()
+  @ApiResponse({ type: UserResponseDto })
   @ApiOperation({
     summary: 'Delete a player',
   })
   @Delete('/:id')
-  @ApiResponse({ type: UserResponseDto })
   deletePlayer(@Param('id') id: string) {
+    console.log('entering delete player');
     return this.playerService.deletePlayer(id);
   }
 }
