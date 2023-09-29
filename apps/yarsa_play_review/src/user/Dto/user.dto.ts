@@ -116,7 +116,7 @@ export class BulkDto {
   ids: string;
 }
 
-class Meta {
+export class Meta {
   @ApiProperty()
   totalItems: number;
 
@@ -136,7 +136,7 @@ class Meta {
   hasPreviousPage: false;
 }
 
-class Links {
+export class Links {
   @ApiProperty()
   first: string;
 
@@ -150,7 +150,7 @@ class Links {
   last: string;
 }
 
-class UserData {
+export class UserData {
   @ApiProperty()
   id: string;
 

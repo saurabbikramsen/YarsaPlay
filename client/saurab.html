@@ -165,11 +165,17 @@
       });
 
       const eventSource = new EventSource('http://localhost:8080/sse/event');
+
       eventSource.onmessage = (event) => {
-        console.log(event.data);
+        console.log('Received SSE event:', event.data);
+
         const message = document.createElement('div');
         message.innerText = 'New Event: ' + event.data;
         sseMessages.appendChild(message);
+      };
+
+      eventSource.onerror = (error) => {
+        console.error('SSE Error:', error);
       };
     </script>
   </body>

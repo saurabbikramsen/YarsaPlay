@@ -171,6 +171,9 @@
         message.innerText = 'New Event: ' + event.data;
         sseMessages.appendChild(message);
       };
+      eventSource.onerror = (error) => {
+        console.error('SSE Error:', error);
+      };
     </script>
   </body>
 </html>
