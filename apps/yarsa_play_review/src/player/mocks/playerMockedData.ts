@@ -126,6 +126,20 @@ export const playerLoginDetail = {
   name: player.name,
 };
 
+export const userLoginInfo = {
+  id: player.id,
+  name: 'saurab',
+  role: 'player',
+  email: 'saurab@gmail.com',
+  password:
+    '$argon2id$v=19$m=65536,t=3,p=4$NLQKCPZJC1boicab/t5I6Q$7Uk3Ywjd4DCFCawLrhev2VEKGjohP+wpYFLQKZeYHyc',
+};
+
+export const tokens = {
+  accessToken: playerLoginDetail.accessToken,
+  refreshToken: playerLoginDetail.refreshToken,
+};
+
 export const jwtPayload = {
   email: 'saurab@gmail.com',
   role: player.role,
@@ -135,3 +149,69 @@ export const jwtToken =
 
 export const hashPassword =
   '$argon2id$v=19$m=65536,t=3,p=4$lIZpyNVA5uxky6Kz/6NZAw$9KZz9m1s7WjQkVn10hUGI/B1kUHoSVg3cHzpfr/lW90';
+
+export const paginatedPlayer = {
+  data: [
+    {
+      id: '697f7f2c-11f5-4621-99b9-1b3bb650a968',
+      name: 'Lisandro',
+      active: true,
+      statistics: {
+        coins: 340,
+        experience_point: 1194,
+        games_played: 45,
+        games_won: 23,
+      },
+    },
+    {
+      id: '8eb07ab9-5924-4bf9-9c4f-ffe8a1f83fc5',
+      name: 'Rosario',
+      active: true,
+      statistics: {
+        coins: 316,
+        experience_point: 1309,
+        games_played: 48,
+        games_won: 25,
+      },
+    },
+  ],
+  meta: {
+    totalItems: 7,
+    itemsPerPage: 2,
+    currentPage: 1,
+    totalPages: 4,
+    hasNextPage: true,
+    hasPreviousPage: false,
+  },
+  links: {
+    first: '/player?page=1&pageSize=2',
+    prev: null,
+    next: '/player?page=2&pageSize=2',
+    last: '/player?page=4&pageSize=2',
+  },
+};
+
+export const playerData = [
+  {
+    id: '697f7f2c-11f5-4621-99b9-1b3bb650a968',
+    name: 'Lisandro',
+    active: true,
+    statistics: {
+      coins: 340,
+      experience_point: 1194,
+      games_played: 45,
+      games_won: 23,
+    },
+  },
+  {
+    id: '8eb07ab9-5924-4bf9-9c4f-ffe8a1f83fc5',
+    name: 'Rosario',
+    active: true,
+    statistics: {
+      coins: 316,
+      experience_point: 1309,
+      games_played: 48,
+      games_won: 25,
+    },
+  },
+];

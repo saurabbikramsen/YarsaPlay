@@ -11,7 +11,7 @@ const fakeStats = (): any => ({
   games_played: faker.number.int({ min: 30, max: 50 }),
   games_won: faker.number.int({ min: 10, max: 25 }),
 });
-const fakerUser = async () => ({
+const fakerUser = () => ({
   name: faker.person.firstName(),
 });
 
@@ -21,7 +21,7 @@ async function main() {
   console.log('Seeding...');
   for (let i = 0; i < fakerRounds; i++) {
     const stats = await prisma.statistics.create({ data: fakeStats() });
-    const data = await fakerUser();
+    const data = fakerUser();
     const userData = {
       ...data,
       password: await argon.hash(data.name + '123'),

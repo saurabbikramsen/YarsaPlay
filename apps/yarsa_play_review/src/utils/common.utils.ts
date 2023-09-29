@@ -86,13 +86,8 @@ export class CommonUtils {
   }
 
   async loginSignup(userInfo: UserInfo, inputPassword: string) {
-    const pwMatches = await argon.verify(userInfo.password, inputPassword);
-    if (!pwMatches) {
-      throw new HttpException(
-        "password or email doesn't match",
-        HttpStatus.UNAUTHORIZED,
-      );
-    }
+    await this.passwordMatches(userInfo.password, inputPassword);
+
     const key = this.generateRandomString(6);
 
     const tokens = await this.tokenPayload(userInfo, key);
@@ -169,5 +164,15 @@ export class CommonUtils {
       refresh_key: key,
     });
     return { accessToken, refreshToken };
+  }
+
+  async passwordMatches(userPassword, inputPasword) {
+    const pwMatches = await argon.verify(userPassword, inputPasword);
+    if (!pwMatches) {
+      throw new HttpException(
+        "password or email doesn't match",
+        HttpStatus.UNAUTHORIZED,
+      );
+    }
   }
 }

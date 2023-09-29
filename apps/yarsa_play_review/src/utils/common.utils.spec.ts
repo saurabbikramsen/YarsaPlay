@@ -23,6 +23,13 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
 import { jwtPayload, jwtToken } from '../user/mocks/mockedData';
+import {
+  paginatedPlayer,
+  playerData,
+  playerLoginDetail,
+  tokens,
+  userLoginInfo,
+} from '../player/mocks/playerMockedData';
 
 const PrismaServiceMock = {};
 const jwtMockService = {
@@ -71,9 +78,29 @@ describe('CommonUtils', () => {
   });
   describe('generate a random string with given length', () => {
     it('should generate a random string', async () => {
-      const randomString = await commonUtils.generateRandomString(5);
+      const randomString = commonUtils.generateRandomString(5);
       expect(randomString).toEqual(expect.any(String));
       expect(randomString).toHaveLength(5);
+    });
+  });
+  describe('should return paginated response', () => {
+    it('should return paginated user or player data', async () => {
+      const paginatedData = commonUtils.paginatedResponse(playerData, 0, 2, 7);
+      expect(paginatedData).toStrictEqual(paginatedPlayer);
+    });
+  });
+  describe('should return tokens and login/signup details', () => {
+    it('should return loginInfo and tokens ', async () => {
+      commonUtils.passwordMatches = jest.fn();
+      commonUtils.generateRandomString = jest.fn().mockResolvedValue('kxavai');
+      commonUtils.tokenPayload = jest.fn().mockResolvedValue(tokens);
+      commonUtils.updateUser = jest.fn();
+      commonUtils.updatePlayer = jest.fn();
+      const loginSignupDetail = await commonUtils.loginSignup(
+        userLoginInfo,
+        'saurab123',
+      );
+      expect(loginSignupDetail).toStrictEqual(playerLoginDetail);
     });
   });
 });
