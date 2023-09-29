@@ -76,6 +76,7 @@ describe('UserService', () => {
 
   it('should be defined', () => {
     expect(userService).toBeDefined();
+    expect(prismaService).toBeDefined();
   });
 
   describe('get all users', () => {

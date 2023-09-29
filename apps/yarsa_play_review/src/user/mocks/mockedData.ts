@@ -42,7 +42,7 @@ export const loginDetail = {
 };
 
 export const jwtPayload = {
-  email: 'saurab@gmail.com',
+  id: user.id,
   role: user.role,
 };
 export const jwtToken =

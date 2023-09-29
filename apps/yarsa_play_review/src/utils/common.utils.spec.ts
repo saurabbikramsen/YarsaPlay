@@ -17,27 +17,71 @@
 //   expect(userSpyOn).toBeCalledTimes(4);
 // });
 
+import { CommonUtils } from './common.utils';
+import { PrismaService } from '../prisma/prisma.service';
+import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
+import { Test, TestingModule } from '@nestjs/testing';
+import { jwtPayload, jwtToken } from '../user/mocks/mockedData';
+
+const PrismaServiceMock = {};
+const jwtMockService = {
+  signAsync: jest.fn().mockResolvedValue(jwtToken),
+  verify: jest.fn(),
+};
+describe('CommonUtils', () => {
+  let commonUtils: CommonUtils;
+  let prismaService: PrismaService;
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      imports: [],
+      providers: [
+        CommonUtils,
+        { provide: PrismaService, useValue: PrismaServiceMock },
+        ConfigService,
+        { provide: JwtService, useValue: jwtMockService },
+      ],
+    }).compile();
+    commonUtils = module.get<CommonUtils>(CommonUtils);
+    prismaService = module.get<PrismaService>(PrismaService);
+  });
+
+  it('should be defined', () => {
+    expect(commonUtils).toBeDefined();
+    expect(prismaService).toBeDefined();
+  });
+
+  describe('generate access token', () => {
+    it('should generate access token', async () => {
+      const signSpyOn = jest.spyOn(jwtMockService, 'signAsync');
+      const generateAccess = await commonUtils.generateAccessToken(jwtPayload);
+      expect(generateAccess).toStrictEqual(jwtToken);
+      expect(signSpyOn).toBeCalledTimes(1);
+    });
+  });
+
+  describe('generate refresh token', () => {
+    it('should generate refresh token', async () => {
+      const signSpyOn = jest.spyOn(jwtMockService, 'signAsync');
+      const generateAccess = await commonUtils.generateAccessToken(jwtPayload);
+      expect(generateAccess).toStrictEqual(jwtToken);
+      expect(signSpyOn).toBeCalledTimes(2);
+    });
+  });
+  describe('generate a random string with given length', () => {
+    it('should generate a random string', async () => {
+      const randomString = await commonUtils.generateRandomString(5);
+      expect(randomString).toEqual(expect.any(String));
+      expect(randomString).toHaveLength(5);
+    });
+  });
+});
+
 //
 // import argon from "../user/mocks/argonwrapper";
 //
 // argon.verify = jest.fn().mockReturnValue(true);
-
-//   describe('generate access token', () => {
-//     it('should generate access token', async () => {
-//       const jwtAccessSpyOn = jest.spyOn(jwtService, 'signAsync');
-//       const generateAccess = await userService.generateAccessToken(jwtPayload);
-//       expect(generateAccess).toStrictEqual(jwtToken);
-//       expect(jwtAccessSpyOn).toBeCalledTimes(3);
-//     });
-//   });
-//   describe('generate refresh token', () => {
-//     it('should generate refresh token', async () => {
-//       const jwtRefreshSpyOn = jest.spyOn(jwtService, 'signAsync');
-//       const generateAccess = await userService.generateAccessToken(jwtPayload);
-//       expect(generateAccess).toStrictEqual(jwtToken);
-//       expect(jwtRefreshSpyOn).toBeCalledTimes(4);
-//     });
-//   });
 
 //
 // describe('generate new refresh and access token', () => {
