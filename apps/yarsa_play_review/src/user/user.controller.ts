@@ -12,6 +12,7 @@ import {
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import {
+  PaginatedResponseDto,
   RefreshDto,
   RefreshResponseDto,
   SeedDto,
@@ -56,7 +57,7 @@ export class UserController {
   @ApiQuery({ name: 'page', required: true, type: Number })
   @ApiQuery({ name: 'pageSize', required: true, type: Number })
   @Get()
-  @ApiResponse({ type: [UserGetDto] })
+  @ApiResponse({ type: PaginatedResponseDto })
   getAllUsers(
     @Query('searchKey') searchKey = '',
     @Query('page', ParseIntPipe) page = 1,

@@ -28,7 +28,6 @@ describe('UserController E2E test (e2e)', () => {
       .post('/user/seed')
       .send(newUser)
       .expect(HttpStatus.CREATED);
-
     expect(response.body).toBeDefined();
   });
 
@@ -57,7 +56,18 @@ describe('UserController E2E test (e2e)', () => {
       .set('Authorization', `Bearer ${accessToken}`)
       .send(newUser)
       .expect(HttpStatus.CREATED);
+    console.log('first userId: ', userId);
 
+    expect(response.body).toBeDefined();
+  });
+
+  it('should get all the users', async () => {
+    const response = await request(app.getHttpServer())
+      .get('/user')
+      .set('Authorization', `Bearer ${accessToken}`)
+      .query({ searchKey: '', page: 1, pageSize: 5 })
+      .expect(200);
+    userId = response.body.data[1].id;
     expect(response.body).toBeDefined();
   });
 
@@ -68,16 +78,7 @@ describe('UserController E2E test (e2e)', () => {
       .expect(HttpStatus.OK);
 
     userId = response.body.id;
-    expect(response.body).toBeDefined();
-  });
-
-  it('should get all the users', async () => {
-    const response = await request(app.getHttpServer())
-      .get('/user')
-      .set('Authorization', `Bearer ${accessToken}`)
-      .query({ searchKey: 'ra', page: 1, pageSize: 5 })
-      .expect(200);
-
+    console.log('second userId: ', userId);
     expect(response.body).toBeDefined();
   });
 

@@ -115,3 +115,61 @@ export class BulkDto {
   @ApiProperty()
   ids: string;
 }
+
+class Meta {
+  @ApiProperty()
+  totalItems: number;
+
+  @ApiProperty()
+  itemsPerPage: 5;
+
+  @ApiProperty()
+  currentPage: 1;
+
+  @ApiProperty()
+  totalPages: 1;
+
+  @ApiProperty()
+  hasNextPage: false;
+
+  @ApiProperty()
+  hasPreviousPage: false;
+}
+
+class Links {
+  @ApiProperty()
+  first: string;
+
+  @ApiProperty()
+  prev: string;
+
+  @ApiProperty()
+  next: string;
+
+  @ApiProperty()
+  last: string;
+}
+
+class UserData {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  name: string;
+
+  @ApiProperty()
+  email: string;
+
+  @ApiProperty()
+  role: string;
+}
+export class PaginatedResponseDto {
+  @ApiProperty({ type: [UserData] })
+  data: UserData;
+
+  @ApiProperty()
+  meta: Meta;
+
+  @ApiProperty()
+  links: Links;
+}

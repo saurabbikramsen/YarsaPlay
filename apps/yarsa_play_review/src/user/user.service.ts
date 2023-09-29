@@ -110,7 +110,7 @@ export class UserService {
       });
       return { message: 'Admin seeded successfully' };
     }
-    throw new BadRequestException('user already present no need to seed');
+    return { message: 'Admin already present' };
   }
 
   async generateNewTokens(refreshDetails: RefreshDto) {
