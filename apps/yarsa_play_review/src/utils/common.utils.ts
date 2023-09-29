@@ -110,28 +110,27 @@ export class CommonUtils {
   }
 
   async generateTokens(token_data: JwtRefreshPayload) {
-    const key = this.generateRandomString(6);
-
     if (token_data.role == 'player') {
       const player = await this.prisma.player.findFirst({
         where: { id: token_data.id },
       });
-
-      return this.tokenGenerator(player, key);
+      return this.tokenGenerator(player, token_data.refresh_key);
     } else if (token_data.role == 'admin' || token_data.role == 'staff') {
       const user = await this.prisma.user.findFirst({
         where: { id: token_data.id },
       });
-      return this.tokenGenerator(user, key);
+      return this.tokenGenerator(user, token_data.refresh_key);
     }
   }
   async tokenGenerator(user, key: string) {
+    const newKey = this.generateRandomString(6);
+
     if (user.refresh_key == key) {
       if (user.role == 'player') await this.updatePlayer(user.email, key);
       else {
-        await this.updateUser(user.email, key);
+        await this.updateUser(user.email, newKey);
       }
-      return this.tokenPayload;
+      return this.tokenPayload(user, newKey);
     } else {
       throw new UnauthorizedException('you are not eligible');
     }

@@ -117,6 +117,7 @@ export class UserService {
     const token_data = await this.utils.decodeRefreshToken(
       refreshDetails.refreshToken,
     );
+    console.log('refresh token: ', token_data);
     return this.utils.generateTokens(token_data);
   }
 }

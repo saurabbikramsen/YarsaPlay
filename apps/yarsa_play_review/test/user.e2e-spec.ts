@@ -6,6 +6,7 @@ import { AppModule } from '../src/app.module';
 describe('UserController E2E test (e2e)', () => {
   let app: INestApplication;
   let accessToken: string;
+  let refreshToken: string;
   let userId: string;
 
   beforeAll(async () => {
@@ -40,7 +41,7 @@ describe('UserController E2E test (e2e)', () => {
 
     accessToken = response.body.accessToken;
     userId = response.body.id;
-    console.log(response.body);
+    refreshToken = response.body.refreshToken;
     expect(response.body).toBeDefined();
   });
 
@@ -96,11 +97,20 @@ describe('UserController E2E test (e2e)', () => {
     expect(response.body).toBeDefined();
   });
 
+  it('should generate new tokens', async () => {
+    const response = await request(app.getHttpServer())
+      .post(`/user/generaterefresh`)
+      .send({ refreshToken })
+      .expect(201);
+
+    expect(response.body).toBeDefined();
+  });
+
   it('should delete a user', async () => {
     const response = await request(app.getHttpServer())
       .delete(`/user/${userId}`)
       .set('Authorization', `Bearer ${accessToken}`)
-      .expect(HttpStatus.OK);
+      .expect(200);
 
     expect(response.body).toBeDefined();
   });
