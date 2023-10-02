@@ -26,6 +26,7 @@ export const player = {
   name: 'saurab',
   role: 'player',
   active: true,
+  refresh_key: 'dddddd',
   statistics: statistics,
 };
 
@@ -141,9 +142,15 @@ export const tokens = {
 };
 
 export const jwtPayload = {
-  email: 'saurab@gmail.com',
+  id: player.id,
   role: player.role,
 };
+
+export const jwtPlayerRefreshPayload = {
+  ...jwtPayload,
+  refresh_key: 'sdfaee',
+};
+
 export const jwtToken =
   'yJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InNhdXJhYkBnbWFpbC5jb20iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE2OTM5OTE3NTIsImV4cCI6MTY5Mzk5NTM1Mn0.J8jYgtI5M3zEKApqhAhUnqY4j63fIIXdFRpBGzfL5MU';
 

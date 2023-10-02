@@ -7,8 +7,10 @@
 ## Features
 
 - Authentication and Authorization using guards
-- redis cache implementation for storing user leaderboard
-- play game to earn xp and coins
+- Redis cache implementation for storing user leaderboard
+- Play game to earn xp and coins
+- Socket chat implementation for personal chats and room chats.
+
 
 
 
@@ -21,7 +23,6 @@
 
 
 - Copy the variables in example.env to .env file
-
 - Install and run postgres in docker, 
   - use your own username, password, and set port to 5432
 
@@ -31,18 +32,23 @@
   - For DATABASE_URL variable, Change the username, password, as your postgres setup  and provide a dbname.
   - Set your 'ACCESS_TOKEN_SECRET' AND 'REFRESH_TOKEN_SECRET'
   - provide expiry time for access and refresh token
-  - Set a appropriate port number for nestapp
+  - Set an appropriate port number for nest-app
   - Initialize the time for 'REDIS_STORE_TIME'
   - Set 'REDIS_PORT' to appropriate port where your redis is running
+  - Install all packages
+  - Apply all the migrations using command below. 
+  - Run the app using yarn start:dev for development mode.
 
 - After running locally '/api' is the route for swagger documentation.
 - Run e2e test which will seed the first admin user:
-  - email : saurabsen@gmail.com
-  - password : saurabsen123
-- now you can login as admin and get access token and refresh token to perform other tasks.
-- Create players and play games to increase thier stats.
-- Seed 100 players to 
+  - email : saurab@gmail.com
+  - password : saurab123
+- now you can log in as admin and get access token and refresh token to perform other tasks.
+- Create players and play games to increase their stats.
+- Seed 100 players using command below.
 - View leaderboard to see top 5 players.
+- For socket APIs documentation '/async-api' is the provided route.
+- For socket client reference there is 3 clients present in the clients folder.
 
 ## Installation
 

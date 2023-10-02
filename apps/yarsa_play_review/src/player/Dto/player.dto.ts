@@ -29,12 +29,20 @@ export class PlayerUpdateDto {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
+  @IsOptional()
   name: string;
 
   @ApiProperty()
   @IsEmail()
   @IsNotEmpty()
+  @IsOptional()
   email: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  @IsOptional()
+  refresh_key: string;
 }
 
 export class PlayerLoginDto {

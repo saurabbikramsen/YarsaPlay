@@ -37,6 +37,9 @@ const utils = {
   paginatedResponse: jest.fn().mockResolvedValue(players),
   playNewGame: jest.fn().mockResolvedValue(playResponse),
   loginSignup: jest.fn().mockResolvedValue(playerLoginDetail),
+  updatePlayer: jest
+    .fn()
+    .mockResolvedValue({ message: 'Player Updated Successfully' }),
 };
 const JWTServiceMock = {};
 const cacheManager = {
@@ -217,14 +220,18 @@ describe('PlayerService', () => {
     });
     it('should update the player', async () => {
       const findSpyOn = jest.spyOn(prismaService.player, 'findFirst');
+      const playerUpdateSpyOn = jest.spyOn(utils, 'updatePlayer');
       const updatePlayer = await playerService.updatePlayer(player.id, {
         ...player,
         email: 'sen@gmail.com',
       });
-      expect(updatePlayer).toStrictEqual({
-        message: 'Player Updated Successfully',
-      });
+      expect(updatePlayer).toEqual(
+        expect.objectContaining({
+          message: expect.any(String),
+        }),
+      );
       expect(findSpyOn).toBeCalledTimes(9);
+      expect(playerUpdateSpyOn).toBeCalledTimes(1);
     });
   });
 

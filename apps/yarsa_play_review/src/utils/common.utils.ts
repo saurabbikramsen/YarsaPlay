@@ -14,6 +14,7 @@ export interface UserInfo {
   email: string;
   name: string;
   role: string;
+  refresh_key?: string;
   password: string;
 }
 const characters =
@@ -28,6 +29,12 @@ export interface JwtRefreshPayload {
   refresh_key: string;
 }
 
+export interface UpdateData {
+  name?: string;
+  email?: string;
+  id?: string;
+  refresh_key?: string;
+}
 @Injectable()
 export class CommonUtils {
   constructor(
@@ -89,11 +96,12 @@ export class CommonUtils {
     await this.passwordMatches(userInfo.password, inputPassword);
 
     const key = this.generateRandomString(6);
+    userInfo.refresh_key = key;
 
     const tokens = await this.tokenPayload(userInfo, key);
 
-    if (userInfo.role == 'player') await this.updatePlayer(userInfo.email, key);
-    else await this.updateUser(userInfo.email, key);
+    if (userInfo.role == 'player') await this.updatePlayer(userInfo);
+    else await this.updateUser(userInfo);
 
     return {
       accessToken: tokens.accessToken,
@@ -105,6 +113,8 @@ export class CommonUtils {
   }
 
   async generateTokens(token_data: JwtRefreshPayload) {
+    console.log(token_data);
+
     if (token_data.role == 'player') {
       const player = await this.prisma.player.findFirst({
         where: { id: token_data.id },
@@ -117,42 +127,22 @@ export class CommonUtils {
       return this.tokenGenerator(user, token_data.refresh_key);
     }
   }
+
   async tokenGenerator(user, key: string) {
     const newKey = this.generateRandomString(6);
 
     if (user.refresh_key == key) {
-      if (user.role == 'player') await this.updatePlayer(user.email, key);
+      user.refresh_key = newKey;
+      if (user.role == 'player') await this.updatePlayer(user);
       else {
-        await this.updateUser(user.email, newKey);
+        await this.updateUser(user);
       }
       return this.tokenPayload(user, newKey);
     } else {
       throw new UnauthorizedException('you are not eligible');
     }
   }
-  async updateUser(email: string, refresh_key: string) {
-    await this.prisma.user.update({
-      where: { email },
-      data: { refresh_key },
-    });
-  }
-  async updatePlayer(email: string, refresh_key: string) {
-    await this.prisma.player.update({
-      where: { email },
-      data: { refresh_key },
-    });
-  }
-  async decodeRefreshToken(token: string) {
-    return this.jwt.verify(token, {
-      secret: this.config.get('REFRESH_TOKEN_SECRET'),
-    });
-  }
 
-  async decodeAccessToken(token: string) {
-    return this.jwt.verify(token, {
-      secret: this.config.get('ACCESS_TOKEN_SECRET'),
-    });
-  }
   async tokenPayload(userInfo: UserInfo, key: string) {
     const payload = {
       id: userInfo.id,
@@ -164,6 +154,32 @@ export class CommonUtils {
       refresh_key: key,
     });
     return { accessToken, refreshToken };
+  }
+
+  async updateUser(updates: UpdateData) {
+    await this.prisma.user.update({
+      where: { id: updates.id },
+      data: { ...updates },
+    });
+    return { message: 'User Updated Successfully' };
+  }
+  async updatePlayer(updates: UpdateData) {
+    await this.prisma.player.update({
+      where: { id: updates.id },
+      data: { ...updates },
+    });
+    return { message: 'Player Updated Successfully' };
+  }
+  async decodeRefreshToken(token: string) {
+    return this.jwt.verify(token, {
+      secret: this.config.get('REFRESH_TOKEN_SECRET'),
+    });
+  }
+
+  async decodeAccessToken(token: string) {
+    return this.jwt.verify(token, {
+      secret: this.config.get('ACCESS_TOKEN_SECRET'),
+    });
   }
 
   async passwordMatches(userPassword, inputPasword) {

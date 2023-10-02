@@ -18,6 +18,7 @@ export const user = {
   name: 'saurab',
   role: 'admin',
   email: 'saurab@gmail.com',
+  refresh_key: 'sauser',
 };
 
 export const addUser = {
@@ -44,6 +45,11 @@ export const loginDetail = {
 export const jwtPayload = {
   id: user.id,
   role: user.role,
+};
+
+export const jwtUserRefreshPayload = {
+  ...jwtPayload,
+  refresh_key: 'dfadsd',
 };
 export const jwtToken =
   'yJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InNhdXJhYkBnbWFpbC5jb20iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE2OTM5OTE3NTIsImV4cCI6MTY5Mzk5NTM1Mn0.J8jYgtI5M3zEKApqhAhUnqY4j63fIIXdFRpBGzfL5MU';

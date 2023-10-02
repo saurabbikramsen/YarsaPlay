@@ -178,23 +178,11 @@ export class PlayerService {
   }
 
   async updatePlayer(id: string, playerDetails: PlayerUpdateDto) {
-    console.log('udating the player');
     const player = await this.prisma.player.findFirst({ where: { id } });
-
     if (!player) {
       throw new NotFoundException('player not found');
     }
-    await this.prisma.player.update({
-      where: { id },
-      data: {
-        name: playerDetails.name,
-        email: playerDetails.email,
-      },
-    });
-    console.log('succesfully player updated');
-    return {
-      message: 'Player Updated Successfully',
-    };
+    return this.utils.updatePlayer(playerDetails);
   }
 
   async deletePlayer(id: string) {
