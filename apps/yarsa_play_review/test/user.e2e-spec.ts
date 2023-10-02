@@ -20,7 +20,7 @@ describe('UserController E2E test (e2e)', () => {
 
   it('should seed a admin user', async () => {
     const newUser = {
-      name: 'saurab sen',
+      name: 'saurab',
       password: 'saurab123',
       email: 'saurab@gmail.com',
     };
@@ -39,7 +39,6 @@ describe('UserController E2E test (e2e)', () => {
       .expect(201);
 
     accessToken = response.body.accessToken;
-    userId = response.body.id;
     refreshToken = response.body.refreshToken;
     expect(response.body).toBeDefined();
   });
@@ -56,7 +55,6 @@ describe('UserController E2E test (e2e)', () => {
       .set('Authorization', `Bearer ${accessToken}`)
       .send(newUser)
       .expect(HttpStatus.CREATED);
-    console.log('first userId: ', userId);
 
     expect(response.body).toBeDefined();
   });
@@ -67,7 +65,10 @@ describe('UserController E2E test (e2e)', () => {
       .set('Authorization', `Bearer ${accessToken}`)
       .query({ searchKey: '', page: 1, pageSize: 5 })
       .expect(200);
-    userId = response.body.data[1].id;
+    const user = response.body.data.find(
+      (user) => user.email == 'saurabsen@gmail.com',
+    );
+    userId = user.id;
     expect(response.body).toBeDefined();
   });
 
@@ -77,8 +78,6 @@ describe('UserController E2E test (e2e)', () => {
       .set('Authorization', `Bearer ${accessToken}`)
       .expect(HttpStatus.OK);
 
-    userId = response.body.id;
-    console.log('second userId: ', userId);
     expect(response.body).toBeDefined();
   });
 

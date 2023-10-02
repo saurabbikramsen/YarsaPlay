@@ -178,11 +178,12 @@ export class PlayerService {
   }
 
   async updatePlayer(id: string, playerDetails: PlayerUpdateDto) {
+    console.log('inside update player service:', id);
     const player = await this.prisma.player.findFirst({ where: { id } });
     if (!player) {
       throw new NotFoundException('player not found');
     }
-    return this.utils.updatePlayer(playerDetails);
+    return this.utils.updatePlayer(player);
   }
 
   async deletePlayer(id: string) {
@@ -190,7 +191,6 @@ export class PlayerService {
     if (!player) {
       throw new NotFoundException('player not found');
     }
-    console.log('player found and now deleting');
     await this.prisma.player.delete({ where: { id } });
     return {
       message: 'player deleted successfully',

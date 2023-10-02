@@ -105,6 +105,7 @@ export class PlayerController {
   @Put('/:id')
   @ApiResponse({ type: UserResponseDto })
   updatePlayer(@Body() playerDto: PlayerUpdateDto, @Param('id') id: string) {
+    console.log('id is: ', id);
     return this.playerService.updatePlayer(id, playerDto);
   }
 

@@ -66,6 +66,7 @@ describe('PlayerController E2E test (e2e)', () => {
   });
 
   it('should delete a player', async () => {
+    console.log(playerId);
     const response = await request(app.getHttpServer())
       .delete(`/player/${playerId}`)
       .set('Authorization', `Bearer ${accessToken}`)
