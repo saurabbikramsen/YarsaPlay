@@ -13,6 +13,7 @@ const fakeStats = (): any => ({
 });
 const fakerUser = () => ({
   name: faker.person.firstName(),
+  email: faker.internet.email(),
 });
 
 async function main() {
@@ -25,7 +26,6 @@ async function main() {
     const userData = {
       ...data,
       password: await argon.hash(data.name + '123'),
-      email: data.name + '@gmail.com',
     };
     await prisma.player.create({
       data: { ...userData, statistics: { connect: { id: stats.id } } },

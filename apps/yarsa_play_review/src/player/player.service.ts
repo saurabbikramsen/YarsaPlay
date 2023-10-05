@@ -6,12 +6,12 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
-import * as argon from 'argon2';
 import { PlayerDto, PlayerUpdateDto } from './Dto/player.dto';
 import { CommonUtils } from '../utils/common.utils';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { SseService } from '../serverSentEvents/sse.service';
+import * as argon from 'argon2';
 
 @Injectable()
 export class PlayerService {
