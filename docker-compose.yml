@@ -16,7 +16,7 @@ services:
       - POSTGRES_USER=yarsatest
       - POSTGRES_PASSWORD=yarsatest123
     ports:
-      - '5433:5432'
+      - '5432:5432'
     volumes:
       - postgres:/var/lib/postgresql/data
 volumes:
