@@ -31,7 +31,7 @@
 
 - In the env file
   - Set your 'ACCESS_TOKEN_SECRET' AND 'REFRESH_TOKEN_SECRET'
-  - provide expiry time for access and refresh token
+  - Provide expiry time (in minutes or hour or day) for access and refresh token 
   - Set an appropriate port number for nest-app in PORT variable
 
 
