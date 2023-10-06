@@ -37,7 +37,7 @@
 
 - Install all packages using command below.
 - Apply all the migrations using command below. 
-- Run the app using pnpm start:dev for development mode.
+- Run the app locally using pnpm start:dev as below for development mode.
 
 - After running locally 'http://localhost:[port]/api' is the route for swagger documentation.
 - Run e2e test which will seed the first admin user:
@@ -67,7 +67,7 @@
 
 
 ```bash
-  # watch mode
+  # development watch mode
   $ pnpm start:dev
 ```
 

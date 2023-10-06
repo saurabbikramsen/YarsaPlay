@@ -56,6 +56,8 @@ export class ChatsGateway {
   async handleConnection(client: Socket) {
     try {
       const decodedToken = await this.verifyUser(client);
+      console.log(decodedToken);
+
       const player = await this.prisma.player.findFirst({
         where: { email: decodedToken.email },
       });
